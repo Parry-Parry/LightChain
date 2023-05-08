@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
-import types
 from typing import Any
-from matchpy import Wildcard, Operation, Arity
 from lightchain.pipeline import SequentialPipeline, ForkPipeline
 
 class Object(ABC):
