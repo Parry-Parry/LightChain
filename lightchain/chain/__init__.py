@@ -18,37 +18,37 @@ class Chain(ABC):
     def __call__(self, *args, **kwargs):
         raise NotImplementedError
 
-class MultiChain(Chain):
+class SwitchBoardChain(Chain):
     '''
     Chain that can be used to select from multiple chains based on a prompt.
     '''
-    def __init__(self, chain_descriptions : dict, memory=None):
+    def __init__(self, chains, memory=None):
         super().__init__(memory)
-        self.chains = chain_descriptions
-        self.prefix = 'You have the following options with usage descriptions, output the name of the option that best fits the task: \n'
+        self.lookup = {chain.name : chain for chain in chains}
+        self.prompt = 'You have the following options with usage descriptions, output the name of the option that best fits the task: \n'
     
+    def parse(self, input):
+        for chain in self.lookup.keys():
+            if chain in input: return chain
+
     def __call__(self, input):
+        '''
+        Present the LLM with a list of options, and then return the output of the selected option.
+
+        Usage:
+        >>> LLM = Model()
+        >>> chain = SwitchBoardChain([chain1, chain2, chain3])
+        >>> potential = chain('I want to do some task')
+        >>> chain.send(LLM(potential)))
+        >>> out = next(chain)
+        '''
         out = input
-        prefix = self.prefix
-        for chain, desc in self.chains:
-            prefix += f'name: {chain} description: {desc} \n'
-        return prefix + f'task: {out}'
-
-class SwitchBoardChain(Chain):
-    '''
-    Chain that will apply a specific chain based on a parsed use.
-    '''
-    def __init__(self, chains : dict):
-        super().__init__()
-        self.chains = chains
-        self.available_chains = list(chains.keys())
-    
-    def parse(self, chain):
-        for availible_chain in self.available_chains:
-            if availible_chain in chain: return availible_chain
-
-    def __call__(self, input, chain):
-        return self.chains[self.parse(chain)](input)
+        prefix = self.prompt
+        for name, chain in self.lookup.items():
+            prefix += f'name: {name} description: {chain.description} \n'
+        yield prefix + f'task: {out}'
+        key = yield
+        yield self.lookup[key](out)
 
 class SequentialChain(Chain):
     def __init__(self, chains, memory=None):
