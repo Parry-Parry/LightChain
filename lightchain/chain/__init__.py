@@ -13,18 +13,6 @@ class Chain(ABC):
         self.memory = memory
         self.prompt = prompt
         self.params = prompt.params if prompt else None
-    
-    @abstractmethod
-    def _get_keys(self, input : str) -> dict:
-        raise NotImplementedError
-
-    def _parse(self, input : Union[str, dict]) -> str:
-        if isinstance(input, str):
-            return self.get_prompt_keys(input)
-        elif isinstance(input, dict):
-            return input
-        else:
-            raise TypeError(f'Input type {type(input)} not supported')
         
     @abstractmethod
     def __call__(self, *args, **kwargs):

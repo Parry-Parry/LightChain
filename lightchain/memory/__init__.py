@@ -6,7 +6,7 @@ import json
 Uses Deque for simple memory management, can set maxlen to None if using for some more complex storage.
 """
 
-class Memory:
+class QueueMemory:
     def __init__(self, maxlen : int, join : str = '\n') -> None:
         self.buffer = deque(maxlen=maxlen)
         self.join = join
@@ -24,14 +24,32 @@ class Memory:
     def clear(self) -> None:
         self.buffer.clear()
 
-class BufferMemory(Memory):
+class DictMemory:
+    def __init__(self, join : str = '\n') -> None:
+        self.buffer = {}
+        self.join = join
+
+    def insert(self, key : Any, item : Any) -> None:
+        self.buffer[key] = item
+
+    def extend(self, items : dict) -> None:
+        self.buffer.update(items)
+    
+    def tojson(self):
+        return json.dumps(self, default=lambda x: x.__dict__, 
+            sort_keys=True, indent=4)
+    
+    def clear(self) -> None:
+        self.buffer = {}
+
+class BufferMemory(QueueMemory):
     def __init__(self, maxlen : int = 20, join : str = '\n') -> None:
         super.__init__(maxlen, join)
 
     def __str__(self) -> str:
         return f'{self.join}'.join([str(item) for item in self.buffer])
     
-class IOMemory(Memory):
+class IOMemory(QueueMemory):
     def __init__(self, input_prefix : str = 'Human:', output_prefix : str = 'AI:', maxlen: int = 20, join: str = '\n') -> None:
         super().__init__(maxlen, join)
         self.input_prefix = input_prefix
