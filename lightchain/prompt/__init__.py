@@ -26,5 +26,11 @@ class Prompt:
         for key in kwargs: assert key in self.params, f'Param {key} not found in params {self.params}'
         return self.prompt.format(**kwargs)
     
-    def batch_construct(self, params):
-        return [self.construct(**param) for param in params]
+    def batch_construct(self, params, num_proc = None):
+        '''
+        Ensure that params is a list of dicts and large enough to justify overhead of multiprocessing
+        '''
+        from multiprocessing import Pool, cpu_count
+        if num_proc is None: num_proc = cpu_count()
+        with Pool(num_proc) as p:
+            return p.map(self.construct, params)
