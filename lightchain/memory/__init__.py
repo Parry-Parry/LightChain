@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from collections import deque
 from typing import Any
 import json
@@ -6,10 +7,31 @@ import json
 Uses Deque for simple memory management, can set maxlen to None if using for some more complex storage.
 """
 
-class QueueMemory:
-    def __init__(self, maxlen : int, join : str = '\n') -> None:
-        self.buffer = deque(maxlen=maxlen)
+class Memory:
+    def __init__(self, buffer = None, maxlen : int = None, join : str = '\n') -> None:
+        self.buffer = buffer
+        self.maxlen = maxlen
         self.join = join
+    
+    def tojson(self):
+        return json.dumps(self, default=lambda x: x.__dict__, 
+            sort_keys=True, indent=4)
+    
+    @abstractmethod
+    def insert(self, item : Any) -> None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def extend(self, items : Any) -> None:
+        raise NotImplementedError
+    
+    @abstractmethod
+    def clear(self) -> None:
+        raise NotImplementedError
+
+class QueueMemory(Memory):
+    def __init__(self, maxlen : int, join : str = '\n') -> None:
+        super().__init__(buffer=deque(maxlen=maxlen), maxlen=maxlen, join=join)
 
     def insert(self, item : Any) -> None:
         self.buffer.append(item)
@@ -17,27 +39,18 @@ class QueueMemory:
     def extend(self, items : Any) -> None:
         self.buffer.extend(items)
     
-    def tojson(self):
-        return json.dumps(self, default=lambda x: x.__dict__, 
-            sort_keys=True, indent=4)
-    
     def clear(self) -> None:
         self.buffer.clear()
 
-class DictMemory:
+class DictMemory(Memory):
     def __init__(self, join : str = '\n') -> None:
-        self.buffer = {}
-        self.join = join
+        super().__init__(buffer={}, maxlen=None, join=join)
 
     def insert(self, key : Any, item : Any) -> None:
         self.buffer[key] = item
 
     def extend(self, items : dict) -> None:
         self.buffer.update(items)
-    
-    def tojson(self):
-        return json.dumps(self, default=lambda x: x.__dict__, 
-            sort_keys=True, indent=4)
     
     def clear(self) -> None:
         self.buffer = {}
@@ -49,7 +62,7 @@ class BufferMemory(QueueMemory):
     def __str__(self) -> str:
         return f'{self.join}'.join([str(item) for item in self.buffer])
     
-class IOMemory(QueueMemory):
+class ConversationMemory(QueueMemory):
     def __init__(self, input_prefix : str = 'Human:', output_prefix : str = 'AI:', maxlen: int = 20, join: str = '\n') -> None:
         super().__init__(maxlen, join)
         self.input_prefix = input_prefix

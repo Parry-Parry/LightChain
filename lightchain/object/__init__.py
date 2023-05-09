@@ -5,7 +5,7 @@ from lightchain.pipeline import SequentialPipeline, ForkPipeline
 class Object(ABC):
     name = 'Object'
 
-    def __init__(self, name='Entity', description='Some Standard Component') -> None:
+    def __init__(self, name='Entity', description='Some Standard Entity') -> None:
         super().__init__()
         self.name = name
         self.description = description
@@ -26,10 +26,7 @@ class Object(ABC):
 class Model(Object):
     name = 'Model'
 
-    def __init__(self, model, name='Model', description='Some Standard Model') -> None:
+    def __init__(self, model, model_kwargs = {}, name='Model', description='Some Standard Model') -> None:
         super().__init__(name=name, description=description)
         self.model = model
-
-    def __call__(self, *args, **kwargs) -> Any:
-        return self.model(*args, **kwargs)
-
+        self.model_kwargs = model_kwargs

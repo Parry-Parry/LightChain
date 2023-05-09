@@ -2,15 +2,24 @@ from abc import abstractmethod
 
 from lightchain.prompt import Prompt
 from lightchain.object import Model, Object
-from typing import List, Optional
+from typing import Any, List, Optional
 
 class Chain(Object):
+    '''
+    Standard chain object
+
+    Essentially a wrapper for a model, with a prompt and memory
+    Composable using object ops
+    '''
     def __init__(self, model : Model = None, memory=None, prompt : Optional[Prompt] = None, name : str = 'chain', description : str = 'Some Chain'):
         self.model = model
         self.memory = memory
         self.prompt = prompt
         self.params = prompt.params if prompt else None
-        
+    
+    def write(self, input : Any) -> None:
+        if self.memory: self.memory.insert(input)
+
     @abstractmethod
     def __call__(self, *args, **kwargs):
         raise NotImplementedError
@@ -24,8 +33,13 @@ class LambdaChain(Chain):
 
 class SwitchBoardChain(Chain):
     '''
-    Chain that can be used to select from multiple chains based on a prompt.
-    '''
+        Present the LLM with a list of options, and then return the output of the selected option.
+
+        Usage:
+        >>> LLM = Model()
+        >>> chain = SwitchBoardChain(LLM, [chain1, chain2, chain3])
+        >>> out = chain(input)
+        '''
     def __init__(self, model : Model, chains : List[Chain], memory=None, name : str = 'switchboard', description : str = 'Some Switchboard'):
         super().__init__(model=model, memory=memory, name=name, description=description)
         self.lookup = {chain.name : chain for chain in chains}
@@ -36,14 +50,6 @@ class SwitchBoardChain(Chain):
             if chain in input: return chain
 
     def __call__(self, input):
-        '''
-        Present the LLM with a list of options, and then return the output of the selected option.
-
-        Usage:
-        >>> LLM = Model()
-        >>> chain = SwitchBoardChain(LLM, [chain1, chain2, chain3])
-        >>> out = chain(input)
-        '''
         out = input
         prefix = self.prompt
         for name, chain in self.lookup.items():
