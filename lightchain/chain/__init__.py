@@ -2,6 +2,7 @@ from abc import abstractmethod
 
 from lightchain.prompt import Prompt
 from lightchain.object import Model, Object
+from lightchain.memory import Memory
 from typing import Any, List, Optional
 
 class Chain(Object):
@@ -11,7 +12,8 @@ class Chain(Object):
     Essentially a wrapper for a model, with a prompt and memory
     Composable using object ops
     '''
-    def __init__(self, model : Model = None, memory=None, prompt : Optional[Prompt] = None, name : str = 'chain', description : str = 'Some Chain'):
+    def __init__(self, model : Model = None, memory : Memory = None, prompt : Optional[Prompt] = None, name : str = 'chain', description : str = 'Some Chain'):
+        super().__init__(name=name, description=description)
         self.model = model
         self.memory = memory
         self.prompt = prompt
@@ -40,12 +42,12 @@ class SwitchBoardChain(Chain):
         >>> chain = SwitchBoardChain(LLM, [chain1, chain2, chain3])
         >>> out = chain(input)
         '''
-    def __init__(self, model : Model, chains : List[Chain], memory=None, name : str = 'switchboard', description : str = 'Some Switchboard'):
+    def __init__(self, model : Model, chains : List[Chain], memory : Memory = None, name : str = 'switchboard', description : str = 'Some Switchboard'):
         super().__init__(model=model, memory=memory, name=name, description=description)
         self.lookup = {chain.name : chain for chain in chains}
         self.prompt = 'You have the following options with usage descriptions, output the name of the option that best fits the task: \n'
     
-    def parse(self, input):
+    def parse(self, input : str):
         for chain in self.lookup.keys():
             if chain in input: return chain
 

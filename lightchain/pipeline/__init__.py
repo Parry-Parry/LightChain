@@ -1,6 +1,6 @@
 from abc import abstractmethod
 import types
-from typing import Any
+from typing import Any, Iterable
 from matchpy import Wildcard, Operation, Arity
 from chain import Chain, LambdaChain
 
@@ -21,7 +21,7 @@ class Pipeline(Operation):
     name = 'Pipeline'
     arity = Arity.polyadic
 
-    def __init__(self, operands, **kwargs):
+    def __init__(self, operands : Iterable[Chain], **kwargs):
         super().__init__(operands=operands, **kwargs)
         self.chains = list(map(lambda x : get_chain(x), operands) )
 
@@ -38,7 +38,7 @@ class Pipeline(Operation):
 class SequentialPipeline(Pipeline):
     name = 'Sequential Chain Pipeline'
 
-    def __init__(self, operands, **kwargs):
+    def __init__(self, operands : Iterable[Chain], **kwargs):
         super().__init__(operands=operands, **kwargs)
 
     def __call__(self, input) -> Any:
@@ -50,7 +50,7 @@ class SequentialPipeline(Pipeline):
 class ForkPipeline(Pipeline):
     name = 'Forked Chain Pipeline'
 
-    def __init__(self, operands, **kwargs):
+    def __init__(self, operands : Iterable[Chain], **kwargs):
         super().__init__(operands=operands, **kwargs)
 
     def __call__(self, input) -> Any:

@@ -1,11 +1,12 @@
 import json
+from typing import List
 """
 Any prompt can be constructed from this abstract class. No need for particular prompt types or addition of few shot extensions.
 
 Eventually write in Rust
 """
 class Prompt:
-    def __init__(self, prompt, params=None):
+    def __init__(self, prompt : str, params : List[str] = None):
         self.prompt = prompt
         self.params = params
 
@@ -26,7 +27,7 @@ class Prompt:
         for key in kwargs: assert key in self.params, f'Param {key} not found in params {self.params}'
         return self.prompt.format(**kwargs)
     
-    def batch_construct(self, params, num_proc = None):
+    def batch_construct(self, params : List[dict], num_proc : int = None):
         '''
         Ensure that params is a list of dicts and large enough to justify overhead of multiprocessing
         '''

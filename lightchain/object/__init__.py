@@ -1,11 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Any
 from lightchain.pipeline import SequentialPipeline, ForkPipeline
+from lightchain.object import Model
 
 class Object(ABC):
     name = 'Object'
 
-    def __init__(self, name='Entity', description='Some Standard Entity') -> None:
+    def __init__(self, name : str = 'Entity', description : str = 'Some Standard Entity') -> None:
         super().__init__()
         self.name = name
         self.description = description
@@ -26,7 +27,11 @@ class Object(ABC):
 class Model(Object):
     name = 'Model'
 
-    def __init__(self, model, model_kwargs = {}, name='Model', description='Some Standard Model') -> None:
+    def __init__(self, 
+                 model : Model, 
+                 model_kwargs : dict = {}, 
+                 name : str = 'Model', 
+                 description : str = 'Some Standard Model') -> None:
         super().__init__(name=name, description=description)
         self.model = model
         self.model_kwargs = model_kwargs
