@@ -10,7 +10,7 @@ from lightchain.pipeline import ForkPipeline
 # Path: tests/deliberate/chain.py
 
 class Intermediate(Chain):
-    prefix = "The other agents have now responded to the question, do you agree with what they have said? \n If you believe that you now align with the other agents answers, answer 'I agree' otherwise continue the discussion"
+    prefix = "The other agents have now responded to the question, do you agree with what they have said? \n If you believe that you now align with the other agents answers, output '[END]' otherwise continue the discussion"
     def __init__(self, model : Model, params : dict = None):
         super().__init__(model=model, params=params, memory=DictMemory(maxlen=1000))
     
@@ -23,7 +23,7 @@ class Intermediate(Chain):
         text = response.item() 
         # Think about how to keep track of the previous prompt if they have agreed
         self.memory['previous'] += prompt + f'\n{text}'
-        self.memory['current'] = text
+        if '[END]' not in text: self.memory['current'] = text 
         return response
 
 
@@ -50,12 +50,12 @@ class Deliberator:
         while True:
             responses = self.intermediate(responses)
             text = [response.item() for response in responses]
-            if np.all('I agree' in text):
+            if np.all('[END]' in text):
                 break
 
         # if complete: 
         output = ''
-        for agent in self.Intermediate.chains():
+        for agent in self.intermediate.chains():
             out = agent.memory['current']
             output += f'\n Agent {agent.name} responded: {out}'
         return output
