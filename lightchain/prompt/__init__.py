@@ -1,12 +1,15 @@
 import json
 from typing import List
+from lightchain.object import Object
 """
 Any prompt can be constructed from this abstract class. No need for particular prompt types or addition of few shot extensions.
 
 Eventually write in Rust
 """
-class Prompt:
-    def __init__(self, prompt : str, params : List[str] = None):
+
+class Prompt(Object):
+    def __init__(self, prompt : str, params : List[str] = None, name='Standard Prompt', description='Standard Prompt'):
+        super().__init__(name=name, description=description)
         self.prompt = prompt
         self.params = params
 
@@ -35,3 +38,9 @@ class Prompt:
         if num_proc is None: num_proc = cpu_count()
         with Pool(num_proc) as p:
             return p.map(self.construct, params)
+    
+    def __call__(self, input, num_proc=5):
+        if isinstance(input, list):
+            return self.batch_construct(input, num_proc=num_proc)
+        else:
+            return self.construct(**input)

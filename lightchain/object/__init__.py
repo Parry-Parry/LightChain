@@ -29,9 +29,9 @@ class Model(Object):
 
     def __init__(self, 
                  model : Model, 
-                 model_kwargs : dict = {}, 
+                 generation_kwargs : dict = {}, 
                  name : str = 'Model', 
                  description : str = 'Some Standard Model') -> None:
         super().__init__(name=name, description=description)
         self.model = model
-        self.model_kwargs = model_kwargs
+        self.generation_kwargs = generation_kwargs
