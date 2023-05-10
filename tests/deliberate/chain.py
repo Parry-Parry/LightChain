@@ -10,9 +10,9 @@ from lightchain.pipeline import ForkPipeline
 # Path: tests/deliberate/chain.py
 
 class Intermediate(Chain):
-    prefix = "The other agents have now responded to the question, do you agree with what they have said? \n If you believe that you now align with the other agents answers, output '[END]' otherwise continue the discussion"
-    def __init__(self, model : Model, params : dict = None):
-        super().__init__(model=model, params=params, memory=DictMemory(maxlen=1000))
+    prefix = "The other agents have now responded to the question, do you agree with what they have said? \n If you believe that you now align with the other agents answers, output '[END]' otherwise continue the discussion and explain your thinking"
+    def __init__(self, model : Model, params : dict = None, name='0'):
+        super().__init__(model=model, params=params, memory=DictMemory(maxlen=1000), name=name)
     
     def __call__(self, input : dict):
         prompt = self.memory['previous'] + self.prefix
@@ -37,9 +37,9 @@ class DeliberatePrompt(Prompt):
         return self.prompt.construct(question=question)
 
 class Deliberator:
-    def __init__(self, models : List[Model]) -> None:
-        self.agents = ForkPipeline(models)
-        self.intermediate = ForkPipeline([Intermediate(model) for model in models])
+    def __init__(self, model : Model, num_agents : int = 3) -> None:
+        self.agents = ForkPipeline([model for i in range(num_agents)])
+        self.intermediate = ForkPipeline([Intermediate(model, name=str(i)) for i in range(num_agents)])
         self.entry = DeliberatePrompt()
 
         self.intial_chain = self.entry >> self.agents
