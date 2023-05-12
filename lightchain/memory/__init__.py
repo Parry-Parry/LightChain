@@ -63,6 +63,32 @@ class BufferMemory(QueueMemory):
 
     def __str__(self) -> str:
         return f'{self.join}'.join([str(item) for item in self.buffer])
+
+class StringLengthBuffer(DictMemory):
+    def __init__(self, length : int, join: str = '\n') -> None:
+        super().__init__(join)
+        self.length = length
+        self.buffer['main'] = []
+        self.buffer['essential'] = ''
+    
+    def set_essential(self, text : str) -> None:
+        self.buffer['essential'] = text
+    
+    def insert(self, item : Any) -> None:
+        self.buffer['main'].append(item)
+
+    def extend(self, items : Any) -> None:
+        self.buffer['main'].extend(items)
+
+    def clear(self) -> None:
+        self.buffer['main'] = []
+
+    def get_maximum_context(self) -> str:
+        pass
+    
+    def __call__(self) -> str:
+        return str(self.buffer['essential']) + self.join.join(self.get_maximum_context())
+    
     
 class ConversationMemory(QueueMemory):
     def __init__(self, 
