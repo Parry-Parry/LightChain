@@ -44,7 +44,10 @@ class Prompt(Object):
             sort_keys=True, indent=4)
     
     def construct(self, **kwargs):
-        for key in kwargs: assert key in self.params, f'Param {key} not found in params {self.params}'
+        for key in kwargs: 
+            if key not in self.params:
+                logging.warning(f'Key {key} not found in params {self.params}')
+                kwargs.pop(key)
         return self.prompt.format(**kwargs)
     
     def batch_construct(self, params : List[dict], num_proc : int = None):
