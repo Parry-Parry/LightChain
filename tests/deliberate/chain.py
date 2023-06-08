@@ -8,9 +8,16 @@ from lightchain.memory import BufferMemory, DictMemory
 from lightchain.pipeline import ForkPipeline
 
 # Path: tests/deliberate/chain.py
+# https://arxiv.org/abs/2305.14325 now following these clever people as its scooped!
+
+class DeliberatePrompt(Prompt):
+    long = "Using the solutions from other agents as additional information, can you give an updated response...."
+    short = ''
+    def __init__(self, prompt: str, params: List[str] = None, name='Standard Prompt', description='Standard Prompt', long=False):
+        super().__init__(prompt, params, name, description)
+        self.prefix = self.long if long else self.short
 
 class Intermediate(Chain):
-    prefix = "The other agents have now responded to the question, do you agree with what they have said? \n If you believe that you now align with the other agents answers, output '[END]' otherwise continue the discussion and explain your thinking"
     def __init__(self, initial : str, model : Model, params : dict = None, name='0'):
         super().__init__(model=model, params=params, memory=DictMemory(maxlen=1000), name=name)
         self.memory['buffer'] = f'{initial}\n'
@@ -28,26 +35,18 @@ class Intermediate(Chain):
         if '[END]' not in text: self.memory['current'] = text 
         return response
 
-
-class DeliberatePrompt(Prompt):
-    prefix = 'You are an agent which works with other agents to agree on a concept \n You will be given a question, give your answer:'
-    def __init__(self):
-        super().__init__(self.prefix + '\n question: {question} \n answer:', ['question'], name='Entry to deliberate', description='Provides template to begin discussion')
-        self.prompt = Prompt()
-    
-    def __call__(self, question : str):
-        return self.prompt.construct(question=question)
-
 class Deliberator(Chain):
-    def __init__(self, model : Model, num_agents : int = 3, name='Deliberator Chain', description='Recieves a question and uses multiple agents with seperate memories to discuss and agree on a concept') -> None:
+    def __init__(self, model : Model, num_agents : int = 3, name='Deliberator Chain', description='Recieves a question and uses multiple agents with seperate memories to discuss and agree on a concept', long=False) -> None:
         super.__init__(model=model, memory=BufferMemory(), name=name, description=description)
         self.num_agents = num_agents
         self.agents = ForkPipeline([model for _ in range(num_agents)])
-        self.entry = DeliberatePrompt()
+        self.entry = Prompt.fromstring('')
+        self.deliberation_prompt = Prompt.fromstring('', params=['responses'])
+        self.agreement_check = Prompt.fromstring('', params=['responses'])
 
         self.intial_chain = self.entry >> self.agents
     
-    def __call__(self, question : str):
+    def __call__(self, question : str, long=False):
         self.memory.append(question)
         responses = self.intial_chain(question)
         self.intermediate = ForkPipeline([Intermediate(f'{DeliberatePrompt.prefix}\n {question}', self.model, name=str(i)) for i in range(self.num_agents)])
@@ -56,8 +55,7 @@ class Deliberator(Chain):
             responses = self.intermediate(responses)
             self.memory.extend([f'Agent {key} responded: {value}' for key, value in responses.items()])
             text = [response.item() for response in responses]
-            if np.all('[END]' in text):
-                break
+            if 'bar' in self.agreement_check(responses=text): break
 
         # if complete: 
         output = ''
