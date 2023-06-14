@@ -49,7 +49,6 @@ class SequentialPipeline(Pipeline):
 
 class ForkPipeline(Pipeline):
     name = 'Forked Chain Pipeline'
-
     def __init__(self, operands : Iterable[Chain], **kwargs):
         super().__init__(operands=operands, **kwargs)
 

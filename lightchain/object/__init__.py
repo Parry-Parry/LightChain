@@ -26,7 +26,6 @@ class Object(ABC):
     
 class Model(Object):
     name = 'Model'
-
     def __init__(self, 
                  model : Model, 
                  generation_kwargs : dict = {}, 
