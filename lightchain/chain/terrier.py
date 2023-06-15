@@ -12,6 +12,6 @@ class TerrierChain(Chain, Transformer):
         self.out_attr = out_attr
     
     @abstractmethod
-    def forward(self, input):
+    def transform(self, input):
         raise NotImplementedError
         

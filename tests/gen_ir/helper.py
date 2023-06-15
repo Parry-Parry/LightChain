@@ -10,7 +10,7 @@ class ExpansionChain(TerrierChain):
     def __init__(self, model, out_attr='expansion', examples_per_query : int = 3, name='Expansion Chain', description='Terrier Compatible GRF'):
         super().__init__(model, out_attr=out_attr, name=name, description=description)
         self.examples_per_query = examples_per_query
-    def forward(self, input):
+    def transform(self, input):
         input = input.copy() # input is a dataframe of qid, query, docno, text
         examples = input.groupby('qid').sample(self.examples_per_query)
         examples = examples.groupby('qid').apply(lambda x : x.to_dict('records')).to_dict()
