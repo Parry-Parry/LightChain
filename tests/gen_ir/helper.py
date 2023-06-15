@@ -12,7 +12,7 @@ class ExpansionChain(TerrierChain):
         self.examples_per_query = examples_per_query
     def transform(self, input):
         input = input.copy() # input is a dataframe of qid, query, docno, text
-        examples = input.groupby('qid').sample(self.examples_per_query)
+        examples = input.groupby('qid').sample(n=self.examples_per_query, weights='score')
         examples = examples.groupby('qid').apply(lambda x : x.to_dict('records')).to_dict()
 
         # generate expansions for each unique query and make a dictionary of qid -> expansions
