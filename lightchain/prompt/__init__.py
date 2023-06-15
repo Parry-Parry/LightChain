@@ -1,7 +1,7 @@
 import json
 from typing import List
 from lightchain.object import Object
-from typing import Optional, Union, List
+from typing import Optional, List
 import logging
 """
 Any prompt can be constructed from this abstract class. No need for particular prompt types or addition of few shot extensions.
@@ -17,14 +17,6 @@ class Prompt(Object):
 
         if params:
             for param in params: assert f'{{{param}}}' in prompt, f'Param {param} not found in prompt {prompt}'
-
-        if inp_type == 'dict':
-            self.construct = self.dict_construct
-        elif inp_type == 'named':
-            self.construct = self.named_construct
-        else:
-            logging.warning(f'Input type {inp_type} not recognized. Defaulting to dict.')
-            self.construct = self.dict_construct
         
     def __str__(self):
         return self.prompt
