@@ -8,8 +8,8 @@ from .helper import *
 def main(dataset, eval_set, model_name, cut=50, examples_per_query=3):
     eval_set = irds.load(dataset).get_topics()
 
-    retriever = None % cut
-    reranker = None
+    retriever = None % cut # any First pass retriever
+    reranker = None # Assume GRF ranker with weights for expansion
     collect = LambdaChain(lambda x : parse_chains(x, chains=['keywords', 'entities', 'summary']))
 
     keywords_prompt = Prompt('Generate Keywords that describe these documents \n {examples} Keywords:', ['examples'], name='keywords')
@@ -22,7 +22,7 @@ def main(dataset, eval_set, model_name, cut=50, examples_per_query=3):
     expand = generate >> collect
 
     chained_tasks = extract  >> expand
-    transformer_chain = ExpansionChain(model=chained_tasks, out_attr='expansion', name='transformer_chain')
+    transformer_chain = ExpansionChain(model=chained_tasks, out_attr='expansion', examples_per_query=examples_per_query, name='transformer_chain')
 
     pipeline = retriever >> transformer_chain >> reranker
     scores = pipeline(eval_set.queries_iter())

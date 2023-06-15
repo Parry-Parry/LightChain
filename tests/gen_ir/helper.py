@@ -7,15 +7,20 @@ def parse_chains(out, chains : List[str]):
     return [' '.join(map(lambda x : item[x], chains)) for item in out]
 
 class ExpansionChain(TerrierChain):
-    def __init__(self, model, out_attr='text', examples_per_query : int = 3, name='Expansion Chain', description='Terrier Compatible GRF'):
+    def __init__(self, model, out_attr='expansion', examples_per_query : int = 3, name='Expansion Chain', description='Terrier Compatible GRF'):
         super().__init__(model, out_attr=out_attr, name=name, description=description)
         self.examples_per_query = examples_per_query
     def forward(self, input):
-        input = input.copy()
+        input = input.copy() # input is a dataframe of qid, query, docno, text
         examples = input.groupby('qid').sample(self.examples_per_query)
         examples = examples.groupby('qid').apply(lambda x : x.to_dict('records')).to_dict()
 
-        input[self.out_attr] = input.apply(lambda x : x['text'] + self.model(x['text'], examples[x['qid']]), axis=1)
+        # generate expansions for each unique query and make a dictionary of qid -> expansions
+        queries = input[['qid', 'query']].unique()
+        queries['expansion'] = queries.apply(lambda x : self.model(x['query'], examples[x['qid']]), axis=1)
+        queries = queries.set_index('qid')['expansion'].to_dict()
+
+        input[self.out_attr] = input.apply(lambda x : queries[x['qid']], axis=1)
         return input
 
 class Llama(Model):
