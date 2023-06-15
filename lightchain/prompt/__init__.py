@@ -67,7 +67,7 @@ class Prompt(Object):
             return self.construct(**inp)
 
 class FewShotPrompt(Prompt):
-    def __init__(prompt : str, few_shot_constructor : prompt, params : List[str], name='Few Shot Prompt', description='Few Shot Prompt', examples : Optional[List[List[dict]]] = None):
+    def __init__(self, prompt : str, few_shot_constructor : Prompt, params : List[str], name='Few Shot Prompt', description='Few Shot Prompt', examples : Optional[List[List[dict]]] = None):
         if 'examples' not in params: params.append('examples')
         super().__init__(prompt=prompt, params=params, name=name, description=description)
         self.few_shot_constructor = few_shot_constructor
