@@ -17,7 +17,7 @@ class ExpansionChain(TerrierChain):
 
         # generate expansions for each unique query and make a dictionary of qid -> expansions
         queries = input[['qid', 'query']].unique()
-        queries['expansion'] = queries.apply(lambda x : self.model(x['query'], examples[x['qid']]), axis=1)
+        queries['expansion'] = queries.apply(lambda x : self.model({'text' : x['query']}, {'examples' : examples[x['qid']]}), axis=1)
         queries = queries.set_index('qid')['expansion'].to_dict()
 
         input[self.out_attr] = input.apply(lambda x : queries[x['qid']], axis=1)
