@@ -23,7 +23,7 @@ class Object(ABC):
     
     def __or__(self, right):
         return ForkPipeline(self, right)
-    
+
 class Model(Object):
     name = 'Model'
     def __init__(self, 

@@ -1,10 +1,5 @@
-
-from typing import List
 from lightchain.object import Model
 from lightchain.chain.terrier import TerrierChain
-
-def CollectOutput(out):
-    return [' '.join(item.values()) for item in out]
 
 class ExpansionChain(TerrierChain):
     def __init__(self, model, out_attr='expansion', examples_per_query : int = 3, name='Expansion Chain', description='Terrier Compatible GRF'):

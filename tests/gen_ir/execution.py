@@ -1,4 +1,5 @@
 from lightchain.prompt import Prompt
+from lightchain.chain import LambdaChain
 import fire
 import ir_datasets as irds
 from .helper import *
@@ -16,7 +17,7 @@ def main(dataset, eval_set, model_name, cut=50, examples_per_query=3):
 
     extract = keywords_prompt | entities_prompt | summary_prompt
 
-    chained_tasks = extract  >> Llama(model_name, keep_prompt=False) >> CollectOutput
+    chained_tasks = extract  >> Llama(model_name, keep_prompt=False) >> LambdaChain(func=lambda x : [' '.join(item.values()) for item in x])
     transformer_chain = ExpansionChain(model=chained_tasks, out_attr='expansion', examples_per_query=examples_per_query, name='transformer_chain')
 
     pipeline = retriever >> transformer_chain >> reranker
