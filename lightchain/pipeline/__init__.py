@@ -2,13 +2,19 @@ from abc import abstractmethod
 import types
 from typing import Any, Iterable
 from matchpy import Wildcard, Operation, Arity
-from chain import Chain, LambdaChain
+from lightchain.chain import Chain, LambdaChain
+from lightchain.prompt import Prompt
+from lightchain.object import Model
 
 def get_chain(chain) -> Chain:
 
     if isinstance(chain, Wildcard):
         return chain
     if isinstance(chain, Chain):
+        return chain
+    if isinstance(chain, Model):
+        return chain
+    if isinstance(chain, Prompt):
         return chain
     if isinstance(chain, list):
         return SequentialPipeline(chain)
@@ -44,7 +50,10 @@ class SequentialPipeline(Pipeline):
     def __call__(self, input) -> Any:
         out = input
         for chain in self.chains:
-            out = chain(out)
+            if isinstance(out, dict):
+                out = {k : chain(v) for k, v in out.items()}
+            else: 
+                out = chain(out)
         return out
 
 class ForkPipeline(Pipeline):
@@ -53,5 +62,7 @@ class ForkPipeline(Pipeline):
         super().__init__(operands=operands, **kwargs)
 
     def __call__(self, input) -> Any:
+        if isinstance(input, dict):
+            return {k : self(v) for k, v in input.items()}
         return {chain.name : chain(input) for chain in self.chains}
 

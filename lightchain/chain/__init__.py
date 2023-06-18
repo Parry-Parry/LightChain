@@ -20,7 +20,7 @@ class Chain(Object):
         self.params = prompt.params if prompt else None
     
     def write(self, input : Any) -> None:
-        if self.memory: self.memory.insert(input)
+        if self.memory: self.memory(input)
 
     @abstractmethod
     def __call__(self, *args, **kwargs):
