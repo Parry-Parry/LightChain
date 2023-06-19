@@ -31,6 +31,7 @@ class Memory:
 class FaissMemory:
     def __init__(self, index) -> None:
         pass 
+    
     def index():
         pass
     
@@ -77,7 +78,7 @@ class BufferMemory(QueueMemory):
         super.__init__(maxlen, join)
 
     def __str__(self) -> str:
-        return f'{self.join}'.join([str(item) for item in self.buffer])
+        return self.join.join([str(item) for item in self.buffer])
 
 class StringLengthBuffer(DictMemory):
     def __init__(self, length : int, join: str = '\n', essential=None) -> None:
@@ -89,7 +90,11 @@ class StringLengthBuffer(DictMemory):
     def set_essential(self, text : str) -> None:
         assert len(text) <= self.length, f'Essential text must be less than {self.length} characters.'
         self.buffer['essential'] = text
-    
+
+    def extend_essential(self, text : str) -> None:
+        assert len(text) + len(self.buffer['essential']) <= self.length, f'Essential text must be less than {self.length} characters.'
+        self.buffer['essential'] += self.join + text
+
     def insert(self, item : Any) -> None:
         self.buffer['main'].append(item)
 
@@ -98,10 +103,6 @@ class StringLengthBuffer(DictMemory):
 
     def clear(self) -> None:
         self.buffer['main'] = []
-
-    def extend_essential(self, text : str) -> None:
-        assert len(text) + len(self.buffer['essential']) <= self.length, f'Essential text must be less than {self.length} characters.'
-        self.buffer['essential'] += self.join + text
 
     def get_maximum_context(self) -> str:
         essential_len = len(self.buffer['essential'])

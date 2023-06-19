@@ -23,14 +23,20 @@ class Chain(Object):
         if self.memory: self.memory(input)
 
     @abstractmethod
-    def __call__(self, *args, **kwargs):
+    def logic(self, *args, **kwargs) -> Any:
         raise NotImplementedError
+
+    def __call__(self, *args, **kwargs):
+        inp = args[0]
+        if isinstance(inp, dict):
+            return {k : self(v, **kwargs) for k, v in inp.items()}
+        return self.logic(*args, **kwargs)
 
 class LambdaChain(Chain):
     def __init__(self, func : callable):
         super().__init__(model=func, name=func.__name__, description=func.__doc__)
 
-    def __call__(self, *args, **kwargs):
+    def logic(self, *args, **kwargs):
         return self.model(*args, **kwargs)
 
 class SwitchBoardChain(Chain):
@@ -42,7 +48,11 @@ class SwitchBoardChain(Chain):
         >>> chain = SwitchBoardChain(LLM, [chain1, chain2, chain3])
         >>> out = chain(input)
         '''
-    def __init__(self, model : Model, chains : List[Chain], memory : Memory = None, name : str = 'switchboard', description : str = 'Some Switchboard'):
+    def __init__(self, model : Model, 
+                 chains : List[Chain], 
+                 memory : Memory = None, 
+                 name : str = 'switchboard', 
+                 description : str = 'Some Switchboard'):
         super().__init__(model=model, memory=memory, name=name, description=description)
         self.lookup = {chain.name : chain for chain in chains}
         self.prompt = 'You have the following options with usage descriptions, output the name of the option that best fits the task: \n'
@@ -51,7 +61,7 @@ class SwitchBoardChain(Chain):
         for chain in self.lookup.keys():
             if chain in input: return chain
 
-    def __call__(self, input):
+    def logic(self, input):
         out = input
         prefix = self.prompt
         for name, chain in self.lookup.items():
