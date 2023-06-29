@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from typing import Optional
 from lightchain.chain import Chain
 from lightchain.memory import Memory
 from lightchain.object import Model
