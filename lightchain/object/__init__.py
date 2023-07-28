@@ -4,6 +4,12 @@ from lightchain.chain import Chain, LambdaChain
 from matchpy import Wildcard
 from lightchain.object.objects import Model, Object
 from lightchain.object.pipelines import SequentialPipeline, ForkPipeline, Pipeline
+from abc import ABC, abstractmethod
+from typing import Any
+from typing import Any, Iterable
+from lightchain.chain import Chain
+from matchpy import Operation, Arity
+from lightchain.object import get_chain
 
 def get_chain(chain) -> Chain:
 
@@ -21,3 +27,78 @@ def get_chain(chain) -> Chain:
         return LambdaChain(chain)
     
     raise ValueError("Passed parameter %s of type %s cannot be coerced into a chain" % (str(chain), type(chain)))
+
+class Pipeline(Operation):
+    name = 'Pipeline'
+    arity = Arity.polyadic
+
+    def __init__(self, operands : Iterable[Chain], **kwargs):
+        super().__init__(operands=operands, **kwargs)
+        self.chains = list(map(lambda x : get_chain(x), operands) )
+
+    def __getitem__(self, i) -> Chain:
+        return self.chains[i]
+
+    def __len__(self) -> int:
+        return len(self.chains)
+
+    @abstractmethod
+    def __call__(self, input) -> Any:
+        raise NotImplementedError
+
+class SequentialPipeline(Pipeline):
+    name = 'Sequential Chain Pipeline'
+
+    def __init__(self, operands : Iterable[Chain], **kwargs):
+        super().__init__(operands=operands, **kwargs)
+
+    def __call__(self, input) -> Any:
+        out = input
+        for chain in self.chains:
+            if isinstance(out, dict):
+                out = {k : chain(v) for k, v in out.items()}
+            else: 
+                out = chain(out)
+        return out
+
+class ForkPipeline(Pipeline):
+    name = 'Forked Chain Pipeline'
+    def __init__(self, operands : Iterable[Chain], **kwargs):
+        super().__init__(operands=operands, **kwargs)
+
+    def __call__(self, input) -> Any:
+        if isinstance(input, dict):
+            return {k : self(v) for k, v in input.items()}
+        return {chain.name : chain(input) for chain in self.chains}
+    
+class Object(ABC):
+    name = 'Object'
+
+    def __init__(self, name : str = 'Entity', description : str = 'Some Standard Entity') -> None:
+        super().__init__()
+        self.name = name
+        self.description = description
+
+    @abstractmethod
+    def __call__(self, *args, **kwargs) -> Any:
+        raise NotImplementedError
+    
+    def __rshift__(self, right):
+        return SequentialPipeline(self, right)
+    
+    def __lshift__(self, left):
+        return SequentialPipeline(left, self)
+    
+    def __or__(self, right):
+        return ForkPipeline(self, right)
+
+class Model(Object):
+    name = 'Model'
+    def __init__(self, 
+                 model : Any, 
+                 generation_kwargs : dict = {}, 
+                 name : str = 'Model', 
+                 description : str = 'Some Standard Model') -> None:
+        super().__init__(name=name, description=description)
+        self.model = model
+        self.generation_kwargs = generation_kwargs
