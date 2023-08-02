@@ -1,8 +1,6 @@
 from abc import abstractmethod
 
-from lightchain.prompt import Prompt
-from lightchain.object import Model, Object
-from lightchain.memory import Memory
+from lightchain.object import Object
 from typing import Any, List, Optional
 
 class Chain(Object):
@@ -12,7 +10,7 @@ class Chain(Object):
     Essentially a wrapper for a model, with a prompt and memory
     Composable using object ops
     '''
-    def __init__(self, model : Model = None, memory : Memory = None, prompt : Optional[Prompt] = None, name : str = 'chain', description : str = 'Some Chain'):
+    def __init__(self, model : Any = None, memory : Any = None, prompt : Optional[Any] = None, name : str = 'chain', description : str = 'Some Chain'):
         super().__init__(name=name, description=description)
         self.model = model
         self.memory = memory
@@ -48,9 +46,9 @@ class SwitchBoardChain(Chain):
         >>> chain = SwitchBoardChain(LLM, [chain1, chain2, chain3])
         >>> out = chain(input)
         '''
-    def __init__(self, model : Model, 
+    def __init__(self, model : Any, 
                  chains : List[Chain], 
-                 memory : Memory = None, 
+                 memory : Any = None, 
                  name : str = 'switchboard', 
                  description : str = 'Some Switchboard'):
         super().__init__(model=model, memory=memory, name=name, description=description)

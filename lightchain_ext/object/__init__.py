@@ -1,32 +1,10 @@
 import types
+from matchpy import Wildcard
 from lightchain.prompt import Prompt
 from lightchain.chain import Chain, LambdaChain
-from matchpy import Wildcard
-from lightchain.object.objects import Model, Object
-from lightchain.object.pipelines import SequentialPipeline, ForkPipeline, Pipeline
 from abc import ABC, abstractmethod
-from typing import Any
 from typing import Any, Iterable
-from lightchain.chain import Chain
 from matchpy import Operation, Arity
-from lightchain.object import get_chain
-
-def get_chain(chain) -> Chain:
-
-    if isinstance(chain, Wildcard):
-        return chain
-    if isinstance(chain, Chain):
-        return chain
-    if isinstance(chain, Model):
-        return chain
-    if isinstance(chain, Prompt):
-        return chain
-    if isinstance(chain, list):
-        return SequentialPipeline(chain)
-    if isinstance(chain, types.FunctionType):
-        return LambdaChain(chain)
-    
-    raise ValueError("Passed parameter %s of type %s cannot be coerced into a chain" % (str(chain), type(chain)))
 
 class Pipeline(Operation):
     name = 'Pipeline'
@@ -102,3 +80,20 @@ class Model(Object):
         super().__init__(name=name, description=description)
         self.model = model
         self.generation_kwargs = generation_kwargs
+
+def get_chain(chain) -> Chain:
+
+    if isinstance(chain, Wildcard):
+        return chain
+    if isinstance(chain, Chain):
+        return chain
+    if isinstance(chain, Model):
+        return chain
+    if isinstance(chain, Prompt):
+        return chain
+    if isinstance(chain, list):
+        return SequentialPipeline(chain)
+    if isinstance(chain, types.FunctionType):
+        return LambdaChain(chain)
+    
+    raise ValueError("Passed parameter %s of type %s cannot be coerced into a chain" % (str(chain), type(chain)))
