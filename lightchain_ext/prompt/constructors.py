@@ -6,11 +6,17 @@ from lightchain.object import Object
 
 """
 Any prompt can be constructed from this abstract class. No need for particular prompt types
+
+TODO:
+    - Add flexible support for multiple examples per prompt
 """
 
 class Prompt(Object):
     pattern = r"\{([^}]+)\}"
-    def __init__(self, prompt : str, name='Standard Prompt', description='Standard Prompt'):
+    def __init__(self, 
+                 prompt : str, 
+                 name='Standard Prompt', 
+                 description='Standard Prompt'):
         super().__init__(name=name, description=description)
         self.prompt = prompt
         self.params = re.findall(self.pattern, prompt)
@@ -19,7 +25,7 @@ class Prompt(Object):
         return self.prompt
 
     def __repr__(self):
-        return f'Prompt(prompt={self.prompt}, params={self.params}), name={self.name}, description={self.description})'
+        return f'Prompt(prompt={self.prompt}, params={self.params}, name={self.name}, description={self.description})'
     
     @staticmethod
     def fromjson(json_str):
@@ -48,21 +54,26 @@ class Prompt(Object):
     
     def __call__(self, inp):
         if isinstance(inp, list):
-            return [self.construct(x) for x in inp]
+            return list(map(self.construct, inp))
         else:
             return self.construct(inp)
 
 class FewShotPrompt(Prompt):
-    def __init__(self, prompt : str, few_shot_constructor : Prompt, params : List[str], name='Few Shot Prompt', description='Few Shot Prompt', examples : Optional[List[List[dict]]] = None):
-        if 'examples' not in params: params.append('examples')
-        super().__init__(prompt=prompt, params=params, name=name, description=description)
+    def __init__(self, 
+                 prompt : str, 
+                 few_shot_constructor : Prompt, 
+                 name='Few Shot Prompt', 
+                 description='Few Shot Prompt', 
+                 examples : Optional[List[List[dict]]] = None):
+        super().__init__(prompt=prompt, name=name, description=description)
+        if 'examples' not in self.params: self.params.append('examples')
         self.few_shot_constructor = few_shot_constructor
         
         if examples: 
             if isinstance(examples, dict): examples = [examples]
         self.examples = examples if examples else [{'examples' : ''}]
     
-    def __call__(self, params, examples=None, num_proc=4):
+    def __call__(self, params, examples=None):
         if examples is None: examples = self.examples
         if examples and isinstance(examples, dict): examples = [examples]
 
