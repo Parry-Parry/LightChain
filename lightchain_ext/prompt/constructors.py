@@ -27,6 +27,9 @@ class Prompt(Object):
     def __repr__(self):
         return f'Prompt(prompt={self.prompt}, params={self.params}, name={self.name}, description={self.description})'
     
+    def __dict__(self):
+        return {'prompt' : self.prompt, 'name' : self.name, 'description' : self.description}
+    
     @staticmethod
     def fromjson(json_str):
         return json.loads(json_str, object_hook=lambda x: Prompt(**x))
