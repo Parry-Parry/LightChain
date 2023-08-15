@@ -8,9 +8,9 @@ class Memory:
                  buffer = None, 
                  maxlen : int = None, 
                  join : str = '\n') -> None:
-        self.buffer = buffer
-        self.maxlen = maxlen
-        self.join = join
+        self.BUFFER = buffer
+        self.MAXLEN = maxlen
+        self.JOIN = join
     
     def tojson(self):
         return json.dumps(self, default=lambda x: x.__dict__, 
@@ -27,17 +27,6 @@ class Memory:
     @abstractmethod
     def clear(self) -> None:
         raise NotImplementedError
-    
-class FaissMemory:
-    def __init__(self, index) -> None:
-        pass 
-    
-    def index():
-        pass
-    
-    @abstractmethod
-    def __call__(self, *args: Any, **kwargs: Any) -> Any:
-        return NotImplementedError
 
 class QueueMemory(Memory):
     """
@@ -47,75 +36,75 @@ class QueueMemory(Memory):
         super().__init__(buffer=deque(maxlen=maxlen), maxlen=maxlen, join=join)
 
     def insert(self, item : Any) -> None:
-        self.buffer.append(item)
+        self.BUFFER.append(item)
 
     def extend(self, items : Any) -> None:
-        self.buffer.extend(items)
+        self.BUFFER.extend(items)
     
     def clear(self) -> None:
-        self.buffer.clear()
+        self.BUFFER.clear()
 
 class DictMemory(Memory):
     def __init__(self, join : str = '\n') -> None:
         super().__init__(buffer={}, maxlen=None, join=join)
 
     def insert(self, key : Any, item : Any) -> None:
-        self.buffer[key] = item
+        self.BUFFER[key] = item
 
     def extend(self, items : dict) -> None:
-        self.buffer.update(items)
+        self.BUFFER.update(items)
     
     def clear(self) -> None:
-        self.buffer = {}
+        self.BUFFER = {}
 
     def __call__(self, keys) -> Any:
         if isinstance(keys, list):
-            return [self.buffer[key] for key in keys]
-        return self.buffer[keys]
+            return [self.BUFFER[key] for key in keys]
+        return self.BUFFER[keys]
 
 class BufferMemory(QueueMemory):
     def __init__(self, maxlen : int = 20, join : str = '\n') -> None:
         super.__init__(maxlen, join)
 
     def __str__(self) -> str:
-        return self.join.join([str(item) for item in self.buffer])
+        return self.join.join([str(item) for item in self.BUFFER])
 
 class StringLengthBuffer(DictMemory):
     def __init__(self, length : int, join: str = '\n', essential=None) -> None:
         super().__init__(join)
         self.length = length
-        self.buffer['main'] = []
-        self.buffer['essential'] = essential if essential else ''
+        self.BUFFER['main'] = []
+        self.BUFFER['essential'] = essential if essential else ''
     
     def set_essential(self, text : str) -> None:
         assert len(text) <= self.length, f'Essential text must be less than {self.length} characters.'
-        self.buffer['essential'] = text
+        self.BUFFER['essential'] = text
 
     def extend_essential(self, text : str) -> None:
-        assert len(text) + len(self.buffer['essential']) <= self.length, f'Essential text must be less than {self.length} characters.'
-        self.buffer['essential'] += self.join + text
+        assert len(text) + len(self.BUFFER['essential']) <= self.length, f'Essential text must be less than {self.length} characters.'
+        self.BUFFER['essential'] += self.join + text
 
     def insert(self, item : Any) -> None:
-        self.buffer['main'].append(item)
+        self.BUFFER['main'].append(item)
 
     def extend(self, items : Any) -> None:
-        self.buffer['main'].extend(items)
+        self.BUFFER['main'].extend(items)
 
     def clear(self) -> None:
-        self.buffer['main'] = []
+        self.BUFFER['main'] = []
 
-    def get_maximum_context(self) -> str:
-        essential_len = len(self.buffer['essential'])
+    def get_maximum_context(self, new_string) -> str:
+        essential_len = len(self.BUFFER['essential']) + len(new_string)
         current_len = essential_len
-        for i, item in enumerate(self.buffer['main'][::-1]):
+        for i, item in enumerate(self.BUFFER['main'][::-1]):
             if essential_len + len(item) > self.length:
-                return self.join.join[self.buffer['main'][:i:-1]]
+                return self.JOIN.join[self.BUFFER['main'][:i:-1]]
             else:
                 current_len += len(item)
-        return self.join.join(self.buffer['main'])
+        return self.JOIN.join(self.BUFFER['main'])
     
     def __str__(self) -> str:
-        return str(self.buffer['essential']) + self.join.join(self.get_maximum_context())
+        return str(self.BUFFER['essential']) + self.join.join(self.get_maximum_context())
     
     def __call__(self, items):
         if isinstance(items, list):
@@ -139,8 +128,8 @@ class ConversationMemory(StringLengthBuffer):
     
     def insert(self, item : Any) -> None:
         usr, ai = item 
-        self.buffer['main'].append(self.input_prefix + usr)
-        self.buffer['main'].append(self.output_prefix + ai)
+        self.BUFFER['main'].append(self.input_prefix + usr)
+        self.BUFFER['main'].append(self.output_prefix + ai)
     
     def extend(self, items : Any) -> None:
         for item in items:

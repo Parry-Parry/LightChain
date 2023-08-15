@@ -70,24 +70,11 @@ class Object(ABC):
     def __or__(self, right):
         return ForkPipeline(self, right)
 
-class Model(Object):
-    name = 'Model'
-    def __init__(self, 
-                 model : Any, 
-                 generation_kwargs : dict = {}, 
-                 name : str = 'Model', 
-                 description : str = 'Some Standard Model') -> None:
-        super().__init__(name=name, description=description)
-        self.model = model
-        self.generation_kwargs = generation_kwargs
-
 def get_chain(chain) -> Chain:
 
     if isinstance(chain, Wildcard):
         return chain
     if isinstance(chain, Chain):
-        return chain
-    if isinstance(chain, Model):
         return chain
     if isinstance(chain, Prompt):
         return chain
