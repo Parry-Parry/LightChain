@@ -7,6 +7,6 @@ setuptools.setup(
     author_email='a.parry.1@research.gla.ac.uk',
     description="Stupidly Simple Chain Structures",
     url='https://github.com/Parry-Parry/LightChain',
-    packages=['lightchain_ext'],
+    packages=setuptools.find_packages(exclude=['tests', 'lightchain_tmp']),
     python_requires='>=3.6',
 )
