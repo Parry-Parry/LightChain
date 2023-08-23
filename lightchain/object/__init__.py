@@ -1,7 +1,5 @@
 import types
 from matchpy import Wildcard
-from lightchain.prompt import Prompt
-from lightchain.chain import Chain, LambdaChain
 from abc import ABC, abstractmethod
 from typing import Any, Iterable
 from matchpy import Operation, Arity
@@ -10,11 +8,11 @@ class Pipeline(Operation):
     name = 'Pipeline'
     arity = Arity.polyadic
 
-    def __init__(self, operands : Iterable[Chain], **kwargs):
+    def __init__(self, operands : Iterable, **kwargs):
         super().__init__(operands=operands, **kwargs)
         self.chains = list(map(lambda x : get_chain(x), operands) )
 
-    def __getitem__(self, i) -> Chain:
+    def __getitem__(self, i) -> Any:
         return self.chains[i]
 
     def __len__(self) -> int:
@@ -27,7 +25,7 @@ class Pipeline(Operation):
 class SequentialPipeline(Pipeline):
     name = 'Sequential Chain Pipeline'
 
-    def __init__(self, operands : Iterable[Chain], **kwargs):
+    def __init__(self, operands : Iterable, **kwargs):
         super().__init__(operands=operands, **kwargs)
 
     def __call__(self, input) -> Any:
@@ -41,7 +39,7 @@ class SequentialPipeline(Pipeline):
 
 class ForkPipeline(Pipeline):
     name = 'Forked Chain Pipeline'
-    def __init__(self, operands : Iterable[Chain], **kwargs):
+    def __init__(self, operands : Iterable, **kwargs):
         super().__init__(operands=operands, **kwargs)
 
     def __call__(self, input) -> Any:
@@ -70,8 +68,9 @@ class Object(ABC):
     def __or__(self, right):
         return ForkPipeline(self, right)
 
-def get_chain(chain) -> Chain:
-
+def get_chain(chain) -> Any:
+    from lightchain.prompt import Prompt
+    from lightchain.chain import Chain, LambdaChain
     if isinstance(chain, Wildcard):
         return chain
     if isinstance(chain, Chain):
