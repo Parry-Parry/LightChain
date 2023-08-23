@@ -2,7 +2,6 @@ import json
 from typing import Optional, List
 import logging
 import re
-from lightchain.object import Object
 
 """
 Any prompt can be constructed from this abstract class. No need for particular prompt types
@@ -11,7 +10,7 @@ TODO:
     - Add flexible support for multiple examples per prompt
 """
 
-class Prompt(Object):
+class Prompt:
     pattern = r"\{([^}]+)\}"
     def __init__(self, 
                  prompt : str, 
