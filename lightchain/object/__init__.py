@@ -73,9 +73,11 @@ def get_chain(chain) -> Any:
     from lightchain.chain import Chain, LambdaChain
     if isinstance(chain, Wildcard):
         return chain
-    if isinstance(chain, Chain):
+    if issubclass(chain, Object):
         return chain
-    if isinstance(chain, Prompt):
+    if issubclass(chain, Chain):
+        return chain
+    if issubclass(chain, Prompt):
         return chain
     if isinstance(chain, list):
         return SequentialPipeline(chain)
