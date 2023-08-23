@@ -30,14 +30,14 @@ class Prompt:
         return {'prompt' : self.prompt, 'name' : self.name, 'description' : self.description}
     
     @staticmethod
-    def fromjson(json_str):
+    def from_json(json_str):
         return json.loads(json_str, object_hook=lambda x: Prompt(**x))
     
     @staticmethod
-    def fromstring(string : str, name='Standard Prompt', description='Standard Prompt'):
+    def from_string(string : str, name='Standard Prompt', description='Standard Prompt'):
         return Prompt(prompt=string, name=name, description=description)
     
-    def tojson(self):
+    def to_json(self):
         return json.dumps(self, default=lambda x: x.__dict__, 
             sort_keys=True, indent=4)
     
