@@ -29,8 +29,8 @@ class Pipeline(Object, Operation):
     arity = Arity.polyadic
 
     def __init__(self, operands : Iterable, **kwargs):
-        Operation.__init__(operands=operands, **kwargs)
-        self.chains = list(map(lambda x : get_chain(x), operands) )
+        super().__init__(operands=operands, **kwargs)
+        self.chains = list(map(lambda x : get_chain(x), operands))
 
     def __getitem__(self, i) -> Any:
         return self.chains[i]
