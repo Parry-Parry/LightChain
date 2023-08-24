@@ -48,7 +48,7 @@ class Pipeline(Object, Operation):
     arity = Arity.polyadic
 
     def __init__(self, operands : Iterable, **kwargs):
-        super().__init__(operands=operands, **kwargs)
+        super(Operation, self).__init__(operands=operands, **kwargs)
         self.chains = list(map(lambda x : get_chain(x), operands) )
 
     def __getitem__(self, i) -> Any:
