@@ -11,11 +11,12 @@ class Chain(Object):
     Composable using object ops
     '''
     def __init__(self, model : Any = None, memory : Any = None, prompt : Optional[Any] = None, name : str = 'chain', description : str = 'Some Chain'):
-        super().__init__(name=name, description=description)
         self.model = model
         self.memory = memory
         self.prompt = prompt
         self.params = prompt.params if prompt else None
+        self.name = name
+        self.description = description
     
     def write(self, input : Any) -> None:
         if self.memory: self.memory(input)

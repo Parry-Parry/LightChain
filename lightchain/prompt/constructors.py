@@ -17,9 +17,10 @@ class Prompt(Object):
                  prompt : str, 
                  name='Standard Prompt', 
                  description='Standard Prompt'):
-        super().__init__(name=name, description=description)
         self.prompt = prompt
         self.params = re.findall(self.pattern, prompt)
+        self.name = name
+        self.description = description
         
     def __str__(self):
         return self.prompt
