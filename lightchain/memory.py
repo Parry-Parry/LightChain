@@ -62,13 +62,6 @@ class DictMemory(Memory):
             return [self.BUFFER[key] for key in keys]
         return self.BUFFER[keys]
 
-class BufferMemory(QueueMemory):
-    def __init__(self, maxlen : int = 20, join : str = '\n') -> None:
-        super.__init__(maxlen, join)
-
-    def __str__(self) -> str:
-        return self.join.join([str(item) for item in self.BUFFER])
-
 class StringLengthBuffer(DictMemory):
     def __init__(self, length : int, join: str = '\n', essential=None) -> None:
         super().__init__(join)
@@ -134,10 +127,10 @@ class ConversationMemory(StringLengthBuffer):
     def extend(self, items : Any) -> None:
         for item in items:
             self.insert(item)
-    
-    
-    
-    
 
-    
+class BufferMemory(QueueMemory):
+    def __init__(self, maxlen : int = 20, join : str = '\n') -> None:
+        super.__init__(maxlen, join)
 
+    def __str__(self) -> str:
+        return self.join.join([str(item) for item in self.BUFFER])
