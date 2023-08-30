@@ -12,9 +12,13 @@ class Memory:
         self.MAXLEN = maxlen
         self.JOIN = join
     
-    def tojson(self):
+    def to_json(self):
         return json.dumps(self, default=lambda x: x.__dict__, 
             sort_keys=True, indent=4)
+
+    @staticmethod
+    def from_json(json_str):
+        return json.loads(json_str, object_hook=lambda x: Memory(**x))
     
     @abstractmethod
     def insert(self, item : Any) -> None:
@@ -43,6 +47,13 @@ class QueueMemory(Memory):
     
     def clear(self) -> None:
         self.BUFFER.clear()
+
+class BufferMemory(QueueMemory):
+    def __init__(self, maxlen : int = 20, join : str = '\n') -> None:
+        super.__init__(maxlen, join)
+
+    def __str__(self) -> str:
+        return self.join.join([str(item) for item in self.BUFFER])
 
 class DictMemory(Memory):
     def __init__(self, join : str = '\n') -> None:
@@ -127,10 +138,3 @@ class ConversationMemory(StringLengthBuffer):
     def extend(self, items : Any) -> None:
         for item in items:
             self.insert(item)
-
-class BufferMemory(QueueMemory):
-    def __init__(self, maxlen : int = 20, join : str = '\n') -> None:
-        super.__init__(maxlen, join)
-
-    def __str__(self) -> str:
-        return self.join.join([str(item) for item in self.BUFFER])
