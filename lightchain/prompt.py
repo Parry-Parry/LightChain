@@ -63,34 +63,36 @@ class Prompt(Object):
             return self.construct(inp)
 
 class FewShotPrompt(Prompt):
+    '''
+    TODO: Will need to add examples to custom json (maybe)
+    '''
     def __init__(self, 
                  prompt : str, 
                  few_shot_constructor : Prompt, 
                  name='Few Shot Prompt', 
                  description='Few Shot Prompt', 
-                 examples : Optional[List[List[dict]]] = None):
+                 default : Optional[List[List[dict]]] = None):
         super().__init__(prompt=prompt, name=name, description=description)
-        if 'examples' not in self.params: self.params.append('examples')
         self.few_shot_constructor = few_shot_constructor
         
-        if examples: 
+        if default: 
             if isinstance(examples, dict): examples = [examples]
-        self.examples = examples if examples else [{'examples' : ''}]
+        self.default = examples if examples else [{'examples' : ''}]
     
-    def __call__(self, params, examples=None):
+    def __call__(self, paramx, examples=None):
         if examples is None: examples = self.examples
         if examples and isinstance(examples, dict): examples = [examples]
 
         if len(examples) != 1: # Assumes list of lists of dicts
-            assert len(params) == len(examples), f'Number of example sets {len(examples)} does not match number of param sets {len(params)}'
+            assert len(paramx) == len(examples), f'Number of example sets {len(examples)} does not match number of parameter sets {len(paramx)}'
             examples = map(lambda x : '\n'.join(self.few_shot_constructor(x)), examples)
-            params = [{'examples' : example, **param} for example, param in zip(examples, params)]
+            paramx = [{'examples' : example, **params} for example, params in zip(examples, paramx)]
         else:
             examples = examples[0]
             assert isinstance(examples, dict), f'Examples must be a dict or list of dicts, not {type(examples)}'
-            params = [{'examples' : self.few_shot_constructor(examples), **param} for param in params]
+            paramx = [{'examples' : self.few_shot_constructor(examples), **params} for params in paramx]
 
-        return self.construct(params)
+        return super()(paramx)
     
 
         
