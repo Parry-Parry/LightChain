@@ -73,7 +73,7 @@ class DictMemory(Memory):
             return [self.BUFFER[key] for key in keys]
         return self.BUFFER[keys]
 
-class StringLengthBuffer(DictMemory):
+class StringLengthBuffer(DictMemory): # Consider changing this to be tokenizer specific.
     def __init__(self, length : int, join: str = '\n', essential=None) -> None:
         super().__init__(join)
         self.length = length
@@ -97,15 +97,15 @@ class StringLengthBuffer(DictMemory):
     def clear(self) -> None:
         self.BUFFER['main'] = []
 
-    def get_maximum_context(self, new_string) -> str:
+    def get_maximum_context(self, new_string='') -> str:
         essential_len = len(self.BUFFER['essential']) + len(new_string)
         current_len = essential_len
         for i, item in enumerate(self.BUFFER['main'][::-1]):
-            if essential_len + len(item) > self.length:
-                return self.JOIN.join[self.BUFFER['main'][:i:-1]]
+            if current_len + len(item) > self.length:
+                return self.JOIN.join([*self.BUFFER['essential'], *self.BUFFER['main'][:i:-1], new_string])
             else:
                 current_len += len(item)
-        return self.JOIN.join(self.BUFFER['main'])
+        return self.JOIN.join([*self.BUFFER['essential'], *self.BUFFER['main'], new_string])
     
     def __str__(self) -> str:
         return str(self.BUFFER['essential']) + self.join.join(self.get_maximum_context())
