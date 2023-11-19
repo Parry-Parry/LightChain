@@ -10,7 +10,7 @@ class Memory:
                  join : str = '\n') -> None:
         self.BUFFER = buffer
         self.MAXLEN = maxlen
-        self.JOIN = join
+        self.JOIN = lambda x : join.join(x) if isinstance(x, list) else x
     
     def to_json(self):
         return json.dumps(self, default=lambda x: x.__dict__, 
@@ -48,12 +48,8 @@ class QueueMemory(Memory):
     def clear(self) -> None:
         self.BUFFER.clear()
 
-class BufferMemory(QueueMemory):
-    def __init__(self, maxlen : int = 20, join : str = '\n') -> None:
-        super.__init__(maxlen, join)
-
     def __str__(self) -> str:
-        return self.join.join([str(item) for item in self.BUFFER])
+        return self.JOIN([str(item) for item in self.BUFFER])
 
 class DictMemory(Memory):
     def __init__(self, join : str = '\n') -> None:
@@ -74,18 +70,24 @@ class DictMemory(Memory):
         return self.BUFFER[keys]
 
 class StringLengthBuffer(DictMemory): # Consider changing this to be tokenizer specific.
-    def __init__(self, length : int, join: str = '\n', essential=None) -> None:
+    def __init__(self, context_length : int, model_id : str, join: str = '\n', essential=None) -> None:
         super().__init__(join)
-        self.length = length
+        from transformers import AutoTokenizer
         self.BUFFER['main'] = []
         self.BUFFER['essential'] = essential if essential else ''
+        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        self._max_length = context_length
+        self._default_length = len(self.tokenizer.encode(self.BUFFER['essential'])) if essential else 0
+
+        assert self._default_length <= self._max_length, f'Essential text must be less than {self._max_length} tokens.'
     
     def set_essential(self, text : str) -> None:
-        assert len(text) <= self.length, f'Essential text must be less than {self.length} characters.'
+        assert len(self.tokenizer.encode(text)) <= self._max_length, f'Essential text must be less than {self._max_length} tokens.'
         self.BUFFER['essential'] = text
+        self._default_length = len(self.tokenizer.encode(self.BUFFER['essential']))
 
     def extend_essential(self, text : str) -> None:
-        assert len(text) + len(self.BUFFER['essential']) <= self.length, f'Essential text must be less than {self.length} characters.'
+        assert len(self.tokenizer.encode(text + self.JOIN)) + len(self.BUFFER['essential']) <= self.length, f'Essential text must be less than {self.length} characters.'
         self.BUFFER['essential'] += self.join + text
 
     def insert(self, item : Any) -> None:
@@ -98,17 +100,18 @@ class StringLengthBuffer(DictMemory): # Consider changing this to be tokenizer s
         self.BUFFER['main'] = []
 
     def get_maximum_context(self, new_string='') -> str:
-        essential_len = len(self.BUFFER['essential']) + len(new_string)
+        essential_len = self._default_length + len(self.tokenizer.encode(new_string))
         current_len = essential_len
         for i, item in enumerate(self.BUFFER['main'][::-1]):
-            if current_len + len(item) > self.length:
+            item_len = len(self.tokenizer.encode(item))
+            if current_len + item_len + 1 > self._max_length:
                 return self.JOIN.join([*self.BUFFER['essential'], *self.BUFFER['main'][:i:-1], new_string])
             else:
-                current_len += len(item)
+                current_len += item_len + 1
         return self.JOIN.join([*self.BUFFER['essential'], *self.BUFFER['main'], new_string])
     
     def __str__(self) -> str:
-        return str(self.BUFFER['essential']) + self.join.join(self.get_maximum_context())
+        return str(self.BUFFER['essential']) + self.JOIN.join(self.get_maximum_context())
     
     def __call__(self, items):
         if isinstance(items, list):
@@ -121,18 +124,19 @@ class StringLengthBuffer(DictMemory): # Consider changing this to be tokenizer s
     
 class ConversationMemory(StringLengthBuffer):
     def __init__(self, 
+                 model_id : str,
                  input_prefix : str = 'Human:', 
                  output_prefix : str = 'AI:', 
-                 maxlen: int = 20, 
+                 context_length : int = 20, 
                  join: str = '\n',
-                 essential=None) -> None:
-        super().__init__(length=maxlen, join=join, essential=essential)
+                 essential : str = None) -> None:
+        super().__init__(context_length=context_length, model_id=model_id, join=join, essential=essential)
         self.input_prefix = input_prefix
         self.output_prefix = output_prefix
     
     def insert(self, item : Any) -> None:
-        usr, ai = item 
-        self.BUFFER['main'].append(self.input_prefix + usr)
+        user, ai = item 
+        self.BUFFER['main'].append(self.input_prefix + user)
         self.BUFFER['main'].append(self.output_prefix + ai)
     
     def extend(self, items : Any) -> None:
