@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Any
 
-class Object:
+class Object(object):
     name = 'Object'
 
     @abstractmethod

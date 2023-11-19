@@ -14,7 +14,6 @@ class Chain(Object):
         self.model = model
         self.memory = memory
         self.prompt = prompt
-        self.params = prompt.params if prompt else None
         self.name = name
         self.description = description
     

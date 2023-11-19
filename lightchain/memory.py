@@ -69,7 +69,7 @@ class DictMemory(Memory):
             return [self.BUFFER[key] for key in keys]
         return self.BUFFER[keys]
 
-class StringLengthBuffer(DictMemory): # Consider changing this to be tokenizer specific.
+class StringLengthBuffer(DictMemory): 
     def __init__(self, context_length : int, model_id : str, join: str = '\n', essential=None) -> None:
         super().__init__(join)
         from transformers import AutoTokenizer
@@ -111,7 +111,10 @@ class StringLengthBuffer(DictMemory): # Consider changing this to be tokenizer s
         return self.JOIN.join([*self.BUFFER['essential'], *self.BUFFER['main'], new_string])
     
     def __str__(self) -> str:
-        return str(self.BUFFER['essential']) + self.JOIN.join(self.get_maximum_context())
+        return self.get_maximum_context()
+    
+    def wrap(self, text : str) -> str:
+        return self.get_maximum_context(text)
     
     def __call__(self, items):
         if isinstance(items, list):
