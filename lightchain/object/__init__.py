@@ -3,6 +3,9 @@ from typing import Any
 
 class Object(object):
     name = 'Object'
+    def __init__(self, **kwargs) -> None:
+        for key, value in kwargs.items():
+            setattr(self, key, value)
 
     @abstractmethod
     def __call__(self, *args, **kwargs) -> Any:

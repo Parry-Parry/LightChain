@@ -4,16 +4,14 @@ import logging
 import re
 from lightchain.object import Object
 
-class Prompt(Object):
+class AutoPrompt(Object):
     pattern = r"\{([^}]+)\}"
     def __init__(self, 
                  prompt : str, 
-                 name='Standard Prompt', 
-                 description='Standard Prompt'):
-        self.prompt = prompt
+                 name='AutoPrompt', 
+                 description='Self Parsing Prompt'):
+        super().__init__(prompt=prompt, name=name, description=description)
         self.params = re.findall(self.pattern, prompt)
-        self.name = name
-        self.description = description
         
     def __str__(self):
         return f'Prompt(prompt={self.prompt}, params={self.params}, name={self.name}, description={self.description})'
@@ -26,11 +24,11 @@ class Prompt(Object):
     
     @staticmethod
     def from_json(json_str):
-        return json.loads(json_str, object_hook=lambda x: Prompt(**x))
+        return json.loads(json_str, object_hook=lambda x: AutoPrompt(**x))
     
     @staticmethod
-    def from_string(string : str, name='Standard Prompt', description='Standard Prompt'):
-        return Prompt(prompt=string, name=name, description=description)
+    def from_string(string : str, name='AutoPrompt', description='Self Parsing Prompt'):
+        return AutoPrompt(prompt=string, name=name, description=description)
     
     def to_json(self):
         return json.dumps(self, default=lambda x: x.__dict__, 
@@ -52,10 +50,10 @@ class Prompt(Object):
         else:
             return self.construct(inp)
 
-class FewShotPrompt(Prompt):
+class FewShotPrompt(AutoPrompt):
     def __init__(self, 
                  prompt : str, 
-                 few_shot_constructor : Prompt, 
+                 few_shot_constructor : AutoPrompt, 
                  name='Few Shot Prompt', 
                  description='Few Shot Prompt', 
                  default : Optional[List[List[dict]]] = None):
@@ -78,3 +76,7 @@ class FewShotPrompt(Prompt):
             assert isinstance(examples, dict), f'Examples must be a dict or list of dicts, not {type(examples)}'
             inputs = [{'examples' : self.few_shot_constructor(examples), **params} for params in inputs]
         return super()(inputs)
+
+class StructPrompt(Object):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
