@@ -1,5 +1,6 @@
 from abc import abstractmethod
 from typing import Any
+from functools import wraps
 
 class Object(object):
     name = 'Object'
@@ -22,3 +23,14 @@ class Object(object):
     def __or__(self, right):
         from lightchain.object.ops import ForkPipeline
         return ForkPipeline(self, right)
+
+def chainable(cls):
+    @wraps(cls)
+    class Wrapper(Object):
+        name = cls.__name__
+        def __init__(self, *args, **kwargs) -> None:
+            self._obj = cls(*args, **kwargs)
+        
+        def __call__(self, *args, **kwargs) -> Any:
+            return self._obj(*args, **kwargs)
+    return Wrapper
