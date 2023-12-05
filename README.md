@@ -8,3 +8,9 @@ Uses operator overrides to create CoT pipelines, currently availible is the >> s
 ```
 pip install --upgrade git+https://github.com/Parry-Parry/LightChain.git
 ```
+
+## TODO
+
+* Have an actual idea of how to structure chains
+* Proper Docs
+* Implement DSP

@@ -2,7 +2,9 @@ from abc import abstractmethod
 from collections import deque
 from typing import Any
 import json
+from lightchain import chainable
 
+@chainable
 class Memory:
     def __init__(self, 
                  buffer = None, 

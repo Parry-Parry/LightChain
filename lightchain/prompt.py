@@ -80,3 +80,4 @@ class FewShotPrompt(AutoPrompt):
 class StructPrompt(Object):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        pass

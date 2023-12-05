@@ -11,11 +11,10 @@ class Chain(Object):
     Composable using object ops
     '''
     def __init__(self, model : Any = None, memory : Any = None, prompt : Optional[Any] = None, name : str = 'chain', description : str = 'Some Chain'):
+        super().__init__(name=name, description=description)
         self.model = model
         self.memory = memory
         self.prompt = prompt
-        self.name = name
-        self.description = description
     
     def write(self, input : Any) -> None:
         if self.memory: self.memory(input)
@@ -25,17 +24,9 @@ class Chain(Object):
         raise NotImplementedError
 
     def __call__(self, *args, **kwargs):
-        inp = args[0]
-        if isinstance(inp, dict):
-            return {k : self(v, **kwargs) for k, v in inp.items()}
+        if isinstance(args[0], dict):
+            return {k : self(v, **kwargs) for k, v in args[0].items()}
         return self.logic(*args, **kwargs)
-
-class LambdaChain(Chain):
-    def __init__(self, func : callable):
-        super().__init__(model=func, name=func.__name__, description=func.__doc__)
-
-    def logic(self, *args, **kwargs):
-        return self.model(*args, **kwargs)
 
 class SwitchBoardChain(Chain):
     '''
