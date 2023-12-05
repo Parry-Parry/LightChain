@@ -1,7 +1,6 @@
-import json
+from json import dumps, loads
 from typing import Optional, List
-import logging
-import re
+from re import findall
 from lightchain.object import Object
 
 class AutoPrompt(Object):
@@ -11,44 +10,36 @@ class AutoPrompt(Object):
                  name='AutoPrompt', 
                  description='Self Parsing Prompt'):
         super().__init__(prompt=prompt, name=name, description=description)
-        self.params = re.findall(self.pattern, prompt)
-        
-    def __str__(self):
-        return f'Prompt(prompt={self.prompt}, params={self.params}, name={self.name}, description={self.description})'
-
+        self.params = findall(self.pattern, prompt)
+    
+    @staticmethod
+    def from_json(json_str):
+        return loads(json_str, object_hook=lambda x: AutoPrompt(**x))
+    
+    @staticmethod
+    def from_string(string : str, name='AutoPrompt', description='Self Parsing Prompt'):
+        return AutoPrompt(prompt=string, name=name, description=description)
+    
     def __repr__(self):
         return f'Prompt(prompt={self.prompt}, params={self.params}, name={self.name}, description={self.description})'
     
     def __dict__(self):
         return {'prompt' : self.prompt, 'name' : self.name, 'description' : self.description}
     
-    @staticmethod
-    def from_json(json_str):
-        return json.loads(json_str, object_hook=lambda x: AutoPrompt(**x))
-    
-    @staticmethod
-    def from_string(string : str, name='AutoPrompt', description='Self Parsing Prompt'):
-        return AutoPrompt(prompt=string, name=name, description=description)
-    
     def to_json(self):
-        return json.dumps(self, default=lambda x: x.__dict__, 
+        return dumps(self, default=lambda x: x.__dict__, 
             sort_keys=True, indent=4)
     
     def construct(self, kwargs):
-        arguments = {}
-        for key in kwargs.keys(): 
-            if key not in self.params: logging.warning(f'Key {key} not found in params {self.params}')
-            else: arguments[key] = kwargs[key]
+        arguments = {k : v for k, v in kwargs.items() if k in self.params}
         try:
             return self.prompt.format(**arguments)
         except KeyError as e:
             raise KeyError(f'Missing Args, Error: {e}')
     
     def __call__(self, inp):
-        if isinstance(inp, list):
-            return list(map(self.construct, inp))
-        else:
-            return self.construct(inp)
+        if isinstance(inp, list): return [*map(self.construct, inp)]
+        else: return self.construct(inp)
 
 class FewShotPrompt(AutoPrompt):
     def __init__(self, 

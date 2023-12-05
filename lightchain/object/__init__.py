@@ -7,10 +7,6 @@ class Object(object):
     def __init__(self, **kwargs) -> None:
         for key, value in kwargs.items():
             setattr(self, key, value)
-
-    @abstractmethod
-    def __call__(self, *args, **kwargs) -> Any:
-        raise NotImplementedError
     
     def __rshift__(self, right):
         from lightchain.object.ops import SequentialPipeline
@@ -23,6 +19,10 @@ class Object(object):
     def __or__(self, right):
         from lightchain.object.ops import ForkPipeline
         return ForkPipeline(self, right)
+    
+    @abstractmethod
+    def __call__(self, *args, **kwargs) -> Any:
+        raise NotImplementedError
 
 def chainable(cls):
     @wraps(cls)

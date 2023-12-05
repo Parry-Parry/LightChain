@@ -1,7 +1,8 @@
-from lightchain import Object, Chain
+from lightchain import Chain, chainable
 from typing import Any
 
-class Evaluator(Object):
+@chainable
+class Evaluator():
     def __init__(self,
                  valset : Any,
                  inner_eval : Any):

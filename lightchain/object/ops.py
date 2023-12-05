@@ -1,27 +1,18 @@
-import types
-from matchpy import Wildcard
-from abc import ABC, abstractmethod
+from types import FunctionType
+from matchpy import Wildcard, Operation, Arity
+from abc import abstractmethod
 from typing import Any, Iterable
-from matchpy import Operation, Arity
-
-from lightchain.object import Object
+from lightchain.object import Object, chainable
 
 def get_chain(chain) -> Any:
-    from lightchain.prompt import Prompt
-    from lightchain.chain import Chain, LambdaChain
     if isinstance(chain, Wildcard):
-        return chain
-    if isinstance(chain, Chain):
-        return chain
-    if isinstance(chain, Prompt):
         return chain
     if issubclass(type(chain), Object):
         return chain
+    if isinstance(chain, FunctionType):
+        return chainable(chain)
     if isinstance(chain, list):
         return SequentialPipeline(chain)
-    if isinstance(chain, types.FunctionType):
-        return LambdaChain(chain)
-    
     raise ValueError("Passed parameter %s of type %s cannot be coerced into a chain" % (str(chain), type(chain)))
 
 class Pipeline(Object, Operation):
@@ -30,7 +21,7 @@ class Pipeline(Object, Operation):
 
     def __init__(self, operands : Iterable, **kwargs):
         super().__init__(operands=operands, **kwargs)
-        self.chains = list(map(lambda x : get_chain(x), operands))
+        self.chains = [*map(get_chain, operands)]
 
     def __getitem__(self, i) -> Any:
         return self.chains[i]
@@ -51,10 +42,8 @@ class SequentialPipeline(Pipeline):
     def __call__(self, input) -> Any:
         out = input
         for chain in self.chains:
-            if isinstance(out, dict):
-                out = {k : chain(v) for k, v in out.items()}
-            else: 
-                out = chain(out)
+            if isinstance(out, dict): out = {k : chain(v) for k, v in out.items()}
+            else: out = chain(out)
         return out
 
 class ForkPipeline(Pipeline):
@@ -63,6 +52,5 @@ class ForkPipeline(Pipeline):
         super().__init__(operands=operands, **kwargs)
 
     def __call__(self, input) -> Any:
-        if isinstance(input, dict):
-            return {k : self(v) for k, v in input.items()}
+        if isinstance(input, dict): return {k : self(v) for k, v in input.items()}
         return {chain.name : chain(input) for chain in self.chains}

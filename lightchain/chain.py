@@ -1,23 +1,17 @@
 from abc import abstractmethod
-
 from lightchain.object import Object
-from typing import Any, List, Optional
+from typing import Any, List
 
 class Chain(Object):
     '''
-    Standard chain object
-
-    Essentially a wrapper for a model, with a prompt and memory
-    Composable using object ops
+        A Chain is a wrapper for an arbitrary number of models, memories, and prompts. It is the primary interface for the user to interact with the LLM.
     '''
-    def __init__(self, model : Any = None, memory : Any = None, prompt : Optional[Any] = None, name : str = 'chain', description : str = 'Some Chain'):
-        super().__init__(name=name, description=description)
-        self.model = model
-        self.memory = memory
-        self.prompt = prompt
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
     
-    def write(self, input : Any) -> None:
-        if self.memory: self.memory(input)
+    @abstractmethod
+    def write(self, *args, **kwargs) -> None:
+        raise NotImplementedError
 
     @abstractmethod
     def logic(self, *args, **kwargs) -> Any:
@@ -36,15 +30,13 @@ class SwitchBoardChain(Chain):
         >>> LLM = Model()
         >>> chain = SwitchBoardChain(LLM, [chain1, chain2, chain3])
         >>> out = chain(input)
-        '''
+    '''
+    prompt = 'You have the following options with usage descriptions, output the name of the option that best fits the task: \n'
     def __init__(self, model : Any, 
                  chains : List[Chain], 
-                 memory : Any = None, 
-                 name : str = 'switchboard', 
+                 name : str = 'Switchboard', 
                  description : str = 'Some Switchboard'):
-        super().__init__(model=model, memory=memory, name=name, description=description)
-        self.lookup = {chain.name : chain for chain in chains}
-        self.prompt = 'You have the following options with usage descriptions, output the name of the option that best fits the task: \n'
+        super().__init__(model=model, lookup={chain.name : chain for chain in chains}, name=name, description=description)
     
     def parse(self, input : str):
         for chain in self.lookup.keys():

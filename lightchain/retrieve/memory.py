@@ -1,67 +1,27 @@
 from abc import abstractmethod
-from collections import deque
 from typing import Any
-import json
-from lightchain import chainable
+from lightchain import Object
+import logging
 
-@chainable
-class Memory:
-    def __init__(self, 
-                 buffer = None, 
-                 maxlen : int = None, 
-                 join : str = '\n') -> None:
-        self.BUFFER = buffer
-        self.MAXLEN = maxlen
-        self.JOIN = lambda x : join.join(x) if isinstance(x, list) else x
-    
-    def to_json(self):
-        return json.dumps(self, default=lambda x: x.__dict__, 
-            sort_keys=True, indent=4)
-
-    @staticmethod
-    def from_json(json_str):
-        return json.loads(json_str, object_hook=lambda x: Memory(**x))
+class Memory(Object):
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
     
     @abstractmethod
-    def insert(self, item : Any) -> None:
+    def insert(self, *args, **kwargs) -> None:
         raise NotImplementedError
 
     @abstractmethod
-    def extend(self, items : Any) -> None:
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
         raise NotImplementedError
-    
-    @abstractmethod
-    def clear(self) -> None:
-        raise NotImplementedError
-
-class QueueMemory(Memory):
-    """
-    Uses Deque for simple memory management, can set maxlen to None if using for some more complex storage.
-    """
-    def __init__(self, maxlen : int, join : str = '\n') -> None:
-        super().__init__(buffer=deque(maxlen=maxlen), maxlen=maxlen, join=join)
-
-    def insert(self, item : Any) -> None:
-        self.BUFFER.append(item)
-
-    def extend(self, items : Any) -> None:
-        self.BUFFER.extend(items)
-    
-    def clear(self) -> None:
-        self.BUFFER.clear()
-
-    def __str__(self) -> str:
-        return self.JOIN([str(item) for item in self.BUFFER])
 
 class DictMemory(Memory):
-    def __init__(self, join : str = '\n') -> None:
-        super().__init__(buffer={}, maxlen=None, join=join)
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.BUFFER = {}
 
-    def insert(self, key : Any, item : Any) -> None:
-        self.BUFFER[key] = item
-
-    def extend(self, items : dict) -> None:
-        self.BUFFER.update(items)
+    def insert(self, **kwargs) -> None:
+        self.BUFFER.update(kwargs)
     
     def clear(self) -> None:
         self.BUFFER = {}
@@ -89,14 +49,13 @@ class StringLengthBuffer(DictMemory):
         self._default_length = len(self.tokenizer.encode(self.BUFFER['essential']))
 
     def extend_essential(self, text : str) -> None:
-        assert len(self.tokenizer.encode(text + self.JOIN)) + len(self.BUFFER['essential']) <= self.length, f'Essential text must be less than {self.length} characters.'
-        self.BUFFER['essential'] += self.join + text
+        if len(self.tokenizer.encode(text + self.JOIN)) + len(self.BUFFER['essential']) <= self.length:
+            logging.WARN(f'Essential text must be less than {self.length} characters. No Change Made')
+        else: self.BUFFER['essential'] += self.join + text
 
     def insert(self, item : Any) -> None:
-        self.BUFFER['main'].append(item)
-
-    def extend(self, items : Any) -> None:
-        self.BUFFER['main'].extend(items)
+        if isinstance(item, list): self.BUFFER['main'].extend(item)
+        else: self.BUFFER['main'].append(item)
 
     def clear(self) -> None:
         self.BUFFER['main'] = []
@@ -112,21 +71,9 @@ class StringLengthBuffer(DictMemory):
                 current_len += item_len + 1
         return self.JOIN.join([*self.BUFFER['essential'], *self.BUFFER['main'], new_string])
     
-    def __str__(self) -> str:
-        return self.get_maximum_context()
-    
-    def wrap(self, text : str) -> str:
+    def __call__(self, text : str):
         return self.get_maximum_context(text)
-    
-    def __call__(self, items):
-        if isinstance(items, list):
-            return self.extend(items)
-        if isinstance(items, str):
-            return self.insert(items)
-        else:
-            raise TypeError(f'Expected list or string, got {type(items)}')
-    
-    
+        
 class ConversationMemory(StringLengthBuffer):
     def __init__(self, 
                  model_id : str,

@@ -1,7 +1,6 @@
 from .prompt import AutoPrompt as Prompt
-from .prompt import FewShotPrompt
-from .chain import Chain, SwitchBoardChain
+from .chain import Chain
 from .object import Object, chainable
-from .memory import Memory, QueueMemory, DictMemory, StringLengthBuffer, ConversationMemory
+from . import retrieve
 
 __version__ = "0.0.5"
