@@ -36,11 +36,12 @@ def chainable(cls, call='__call__', name='External Object', description="We don'
         name = cls.__name__
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(name=name, description=description)
-            self.signature = forge.fsignature(getattr(cls, call))
             self.obj = cls(*args, **kwargs)
+            self.func = getattr(self.obj, call) if not isinstance(call, callable) else call
+            self.signature = forge.fsignature(self.func)
     
         def logic(self, *args : Any, **kwargs : Any) -> Any:
-            return getattr(self.obj, call)(*args, **kwargs)
+            return self.func(*args, **kwargs)
     return Wrapper
 
 class SkipLink(Link):
