@@ -1,28 +1,8 @@
 from abc import abstractmethod
-from lightchain.object import Object
-from typing import Any, List
+from lightchain.link import Link
+from typing import Any, List, Optional, Tuple
 
-class Chain(Object):
-    '''
-        A Chain is a wrapper for an arbitrary number of models, memories, and prompts. It is the primary interface for the user to interact with the LLM.
-    '''
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-    
-    @abstractmethod
-    def write(self, *args, **kwargs) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def logic(self, *args, **kwargs) -> Any:
-        raise NotImplementedError
-
-    def __call__(self, *args, **kwargs):
-        if isinstance(args[0], dict):
-            return {k : self(v, **kwargs) for k, v in args[0].items()}
-        return self.logic(*args, **kwargs)
-
-class SwitchBoardChain(Chain):
+class SwitchBoardChain(Link):
     '''
         Present the LLM with a list of options, and then return the output of the selected option.
 
@@ -33,20 +13,20 @@ class SwitchBoardChain(Chain):
     '''
     prompt = 'You have the following options with usage descriptions, output the name of the option that best fits the task: \n'
     def __init__(self, model : Any, 
-                 chains : List[Chain], 
+                 links : List[Link], 
                  name : str = 'Switchboard', 
-                 description : str = 'Some Switchboard'):
-        super().__init__(model=model, lookup={chain.name : chain for chain in chains}, name=name, description=description)
+                 description : str = 'Some Switchboard') -> None:
+        super().__init__(model=model, lookup={link.name : link for link in links}, name=name, description=description)
     
-    def parse(self, input : str):
-        for chain in self.lookup.keys():
-            if chain in input: return chain
+    def parse(self, input : str) -> str:
+        for link in self.lookup.keys():
+            if link in input: return link
 
-    def logic(self, input):
+    def logic(self, input : Tuple[List[str], str]) -> Any:
         out = input
         prefix = self.prompt
-        for name, chain in self.lookup.items():
-            prefix += f'name: {name} description: {chain.description} \n'
+        for name, link in self.lookup.items():
+            prefix += f'name: {name} description: {link.description} \n'
         if isinstance(input, list):
             keys = [self.parse(self.model(prefix + f'task: {o}')) for o in out]
             return [self.lookup[key](o) for key, o in zip(keys, out)]
