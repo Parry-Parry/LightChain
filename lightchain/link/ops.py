@@ -22,7 +22,7 @@ class Pipeline(Link, Operation):
 
     def __init__(self, operands : Iterable, **kwargs):
         super().__init__(operands=operands, **kwargs)
-        self.links = [*map(get_link, operands)]
+        self.links = {link.name : get_link(link) for link in operands}
 
     def __getitem__(self, i) -> Any:
         return self.links[i]
@@ -35,14 +35,14 @@ class Pipeline(Link, Operation):
         raise NotImplementedError
 
 class SequentialPipeline(Pipeline):
-    name = 'Sequential Chain Pipeline'
+    name = 'Sequential Pipeline'
 
     def __init__(self, operands : Iterable, **kwargs):
         super().__init__(operands=operands, **kwargs)
 
     def logic(self, args, **kwargs):
         out = args
-        for link in self.links:
+        for link in self.links.values():
             if isinstance(out, dict): out = {k : link(v, **kwargs) for k, v in out.items()}
             else: out = link(out, **kwargs)
         return out
@@ -52,7 +52,8 @@ class SequentialPipeline(Pipeline):
         else: return [*map(partial(self.logic, **kwargs), args)]
 
 class ForkPipeline(Pipeline):
-    name = 'Forked Chain Pipeline'
+    name = 'Forked Pipeline'
+    
     def __init__(self, operands : Iterable, **kwargs):
         super().__init__(operands=operands, **kwargs)
 
