@@ -9,7 +9,8 @@ class AutoPrompt(Object):
                  prompt : str, 
                  name='AutoPrompt', 
                  description='Self Parsing Prompt'):
-        super().__init__(prompt=prompt, name=name, description=description)
+        super().__init__(name=name, description=description)
+        self.prompt = prompt
         self.params = findall(self.pattern, prompt)
     
     @staticmethod
@@ -30,43 +31,15 @@ class AutoPrompt(Object):
         return dumps(self, default=lambda x: x.__dict__, 
             sort_keys=True, indent=4)
     
-    def construct(self, kwargs):
-        arguments = {k : v for k, v in kwargs.items() if k in self.params}
-        try:
-            return self.prompt.format(**arguments)
-        except KeyError as e:
-            raise KeyError(f'Missing Args, Error: {e}')
-    
-    def __call__(self, inp):
-        if isinstance(inp, list): return [*map(self.construct, inp)]
-        else: return self.construct(inp)
-
-class FewShotPrompt(AutoPrompt):
-    def __init__(self, 
-                 prompt : str, 
-                 few_shot_constructor : AutoPrompt, 
-                 name='Few Shot Prompt', 
-                 description='Few Shot Prompt', 
-                 default : Optional[List[List[dict]]] = None):
-        super().__init__(prompt=prompt, name=name, description=description)
-        self.few_shot_constructor = few_shot_constructor
-        
-        if default: 
-            if isinstance(examples, dict): examples = [examples]
-        self.default = examples if examples else [{'examples' : ''}]
-    
-    def __call__(self, inputs, examples=None):
-        if examples is None: examples = self.default
-        if examples and isinstance(examples, dict): examples = [examples]
-
-        if len(examples) != 1: # Assumes list of lists of dicts
-            assert len(inputs) == len(examples), f'Number of example sets {len(examples)} does not match number of parameter sets {len(inputs)}'
-            examples = map(lambda x : '\n'.join(self.few_shot_constructor(x)), examples)
-            inputs = [{'examples' : example, **params} for example, params in zip(examples, inputs)]
-        else:
-            assert isinstance(examples, dict), f'Examples must be a dict or list of dicts, not {type(examples)}'
-            inputs = [{'examples' : self.few_shot_constructor(examples), **params} for params in inputs]
-        return super()(inputs)
+    def __call__(self, *args, **kwargs):
+        if args:
+            if len(args) == 1: return [self(**inp) for inp in args[0]]
+            else: return map(self, args)
+        elif kwargs:
+            arguments = {k : v for k, v in kwargs.items() if k in self.params}
+            try: return self.prompt.format(**arguments)
+            except KeyError as e: raise KeyError(f'Missing Args, Error: {e}')
+        else: return self.prompt
 
 class StructPrompt(Object):
     def __init__(self, **kwargs):

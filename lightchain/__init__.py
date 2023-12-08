@@ -1,4 +1,4 @@
-from .prompt import AutoPrompt as Prompt
+from .prompt import AutoPrompt
 from .chain import Chain
 from .object import Object, chainable
 from . import retrieve
