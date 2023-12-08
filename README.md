@@ -101,8 +101,6 @@ bm25 = BM25('msmarco_passage')
 # Using our classes from before
 
 pipeline = BM25 >> prompt >> llama_tokenizer >> llama
-
-output = pipeline(text="Do you think most prompting libraries are over-engineered?")
 ```
 
 Let's say we want to assess my RAG setup with a different model e.g. Mistral-7B, whilst also getting Llama output.
