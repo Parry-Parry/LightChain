@@ -7,6 +7,11 @@
 
 LightChain is a tiny library to connect components in complex NLP tasks, designed for research and compatibility with literally anything.
 
+## Install
+```
+pip install --upgrade git+https://github.com/Parry-Parry/LightChain.git
+```
+
 ## The Most Basic Use Case
 
 Simply use our AutoPrompt which extracts your arguments and allows for convienient passing of multiple examples.
@@ -108,9 +113,4 @@ mistral = model_link(MODEL_ID, name='Mistral Model')
 mistral_tokenizer = tokenizer_link(MODEL_ID, name='Mistral Tokenizer')
 
 pipeline = bm25 >> prompt >> (mistral_tokenizer >> mistral) | (llama_tokenizer >> llama) 
-```
-
-## Install
-```
-pip install --upgrade git+https://github.com/Parry-Parry/LightChain.git
 ```
