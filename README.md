@@ -2,9 +2,10 @@
   <img align="center" src="docs/img/chain_white.png" width="460px" />
 </p>
 <p align="left">
+
 # LightChain - Stupidly Simple Chain Structures
 
-Designed for research and compatibility with literally anything, LightChain is a tiny library to connect components in complex NLP tasks.
+LightChain is a tiny library to connect components in complex NLP tasks, designed for research and compatibility with literally anything.
 
 ## Install
 ```
