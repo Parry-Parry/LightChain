@@ -1,3 +1,4 @@
+from functools import partial
 from types import FunctionType
 from matchpy import Wildcard, Operation, Arity
 from abc import abstractmethod
@@ -39,12 +40,16 @@ class SequentialPipeline(Pipeline):
     def __init__(self, operands : Iterable, **kwargs):
         super().__init__(operands=operands, **kwargs)
 
-    def __call__(self, *args, **kwargs) -> Any:
-        out = input
+    def logic(self, args, **kwargs):
+        out = args
         for link in self.links:
-            if isinstance(out, dict): out = {k : link(v) for k, v in out.items()}
-            else: out = link(out)
+            if isinstance(out, dict): out = {k : link(v, **kwargs) for k, v in out.items()}
+            else: out = link(out, **kwargs)
         return out
+
+    def __call__(self, *args, **kwargs) -> Any:
+        if len(args) == 1: return self.logic(args[0], **kwargs)
+        else: return [*map(partial(self.logic, **kwargs), args)]
 
 class ForkPipeline(Pipeline):
     name = 'Forked Chain Pipeline'
@@ -56,5 +61,5 @@ class ForkPipeline(Pipeline):
             if len(args) == 1: return [self(**inp) for inp in args[0]]
             else: return map(self, args)
         elif kwargs:
-        if isinstance(args[0], dict): return {k : self(v, **kwargs) for k, v in args[0].items()}
-        return {chain.name : chain(input) for chain in self.chains}
+            if isinstance(args[0], dict): return {k : self(v, **kwargs) for k, v in args[0].items()}
+            return {link.name : link(input) for link in self.link}
