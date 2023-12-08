@@ -29,7 +29,7 @@ Here are some of the powerful uses of LightChain.
 
 ### The Notion of a Chain
 
-We have two main abstractions in Lightchain. Chains are composed of links. A Link is always defined explicitly whereas a Chain will generally be implicit.
+We have two main abstractions in Lightchain. Chains are composed of links. A Link is always defined explicitly, whereas a Chain is generally implicit.
 
 * Link: An atomic component of a system, its internals may be accessed but generally will only use __call__
 * Chain: Multiple links, a chain can mix sequential and branching components to model any desired behaviour
@@ -42,7 +42,7 @@ Links are defined in two ways:
 
 ### Defining a Chain
 
-A chain is many connected links, crucially they do not have to be sequential. We overload the '>>' operator to link chains sequentially and the '|' operator to branch to multiple links.
+A chain is many connected links; crucially, they do not have to be sequential. We overload the '>>' operator to link chains sequentially and the '|' operator to branch to multiple links.
 
 ### Usage
 
@@ -66,7 +66,7 @@ pipeline = prompt >> llama_tokenizer >> llama
 output = pipeline(text="Do you think most prompting libraries are over-engineered?")
 ```
 
-Now let's take that previous pipeline and make it use RAG. We will explicitly define a link as we are going to interface with a more complex API (The wonderful PyTerrier)
+Now, let's take that previous pipeline and make it use RAG. We will explicitly define a link as we are going to interface with a more complex API (The wonderful PyTerrier)
 
 ```
 from lightchain import Link
@@ -105,7 +105,7 @@ pipeline = BM25 >> prompt >> llama_tokenizer >> llama
 output = pipeline(text="Do you think most prompting libraries are over-engineered?")
 ```
 
-Now let's say I want to assess my RAG setup with a different model e.g. Mistral-7B, whilst also getting Llama output.
+Let's say we want to assess my RAG setup with a different model e.g. Mistral-7B, whilst also getting Llama output.
 
 ```
 MODEL_ID = 'mistralai/Mistral-7B-Instruct-v0.1'
