@@ -103,7 +103,7 @@ bm25 = BM25('msmarco_passage')
 pipeline = BM25 >> prompt >> llama_tokenizer >> llama
 ```
 
-Let's say we want to assess my RAG setup with a different model e.g. Mistral-7B, whilst also getting Llama output.
+Let's say we want to assess our RAG setup with a different model e.g. Mistral-7B, whilst also getting Llama output.
 
 ```
 MODEL_ID = 'mistralai/Mistral-7B-Instruct-v0.1'
