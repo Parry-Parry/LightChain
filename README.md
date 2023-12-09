@@ -59,9 +59,9 @@ MODEL_ID = 'meta-llama/Llama-2-7b-chat-hf'
 llama = model_link(model=MODEL_ID, model_kwargs={'device_map':'auto'}) # If you need to add generation kwargs use functools.partial
 prompt = AutoPrompt.from_string('You are a helpful assistant \n Write a response which answers the question \n Question: {} \n Response:')
 
-pipeline = prompt >> llama
+chain = prompt >> llama
 
-output = pipeline(text="Do you think most prompting libraries are over-engineered?")
+output = chain(text="Do you think most prompting libraries are over-engineered?")
 ```
 
 Now, let's take that previous pipeline and make it use RAG. We will explicitly define a link as we are going to interface with a more complex API (The wonderful PyTerrier)
@@ -98,7 +98,7 @@ bm25 = BM25('msmarco_passage')
 
 # Using our classes from before
 
-pipeline = BM25 >> prompt >> llama
+chain = BM25 >> prompt >> llama
 ```
 
 Let's say we want to assess our RAG setup with a different model e.g. Mistral-7B, whilst also getting Llama output.
@@ -107,5 +107,5 @@ Let's say we want to assess our RAG setup with a different model e.g. Mistral-7B
 MODEL_ID = 'mistralai/Mistral-7B-Instruct-v0.1'
 mistral = model_link(model=MODEL_ID, model_kwargs={'device_map':'auto'})
 
-pipeline = bm25 >> prompt >> (mistral | llama) 
+chain = bm25 >> prompt >> (mistral | llama) 
 ```
