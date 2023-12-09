@@ -33,7 +33,6 @@ class Link(object):
 def chainable(cls, call='__call__', name='External Object', description="We don't know what this is but it's probably important"):
     @wraps(cls)
     class Wrapper(Link):
-        name = cls.__name__
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(name=name, description=description)
             self.obj = cls(*args, **kwargs)
