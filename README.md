@@ -78,13 +78,13 @@ from pyterrier import BatchRetrieve
 
 prompt = AutoPrompt.from_string('You are a helpful assistant \n Write a response which answers the question given the context \n Question: {question} \n Context: {context} \n Response:')
 
-@chainable(name='BM25', desc='A Lexical Model')
+@chainable(call='search', name='BM25', desc='A Lexical Model')
 class BM25:
     def __init__(dataset : str, num_results : int = 10, text_attr : str = 'body'):
         text_ref = pt.get_dataset(dataset)
         self.transformer = pt.BatchRetrieve.from_dataset(dataset, "terrier_stemmed", wmodel="BM25") % num_results >> pt.text.get_text(text_ref, text_attr)
 
-    def logic(text : Tuple[List[str], str]) -> Tuple[List[str], str]:
+    def search(text : Tuple[List[str], str]) -> Tuple[List[str], str]:
         # Let's keep it simple and return the full string
         import pandas as pd
         if isinstance(text, list):
