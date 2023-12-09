@@ -20,7 +20,7 @@ Use our AutoPrompt, which extracts your arguments and allows for the convenient 
 from lightchain import AutoPrompt
 
 prompt = AutoPrompt.from_string('You are a helpful assistant \n Write a response which answers the question \n Question: {} \n Response:')
-value = prompt(text=text)
+value = prompt(text="Do you think most prompting libraries are over-engineered?")
 ```
 
 ## More Complex Use Cases
