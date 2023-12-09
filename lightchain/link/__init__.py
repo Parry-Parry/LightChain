@@ -1,13 +1,13 @@
 from abc import abstractmethod
 from typing import Any
 from functools import wraps
-import forge
+from forge import fsignature
 
 class Link(object):
     name = 'Link'
     description = 'A Link'
     def __init__(self, **kwargs) -> None:
-        self.signature = forge.fsignature(self.logic)
+        self.signature = fsignature(self.logic)
         for key, value in kwargs.items():
             setattr(self, key, value)
     
@@ -37,7 +37,7 @@ def chainable(cls, call='__call__', name='External Object', description="We don'
             super().__init__(name=name, description=description)
             self.obj = cls(*args, **kwargs)
             self.func = getattr(self.obj, call) if not isinstance(call, callable) else call
-            self.signature = forge.fsignature(self.func)
+            self.signature = fsignature(self.func)
     
         def logic(self, *args : Any, **kwargs : Any) -> Any:
             return self.func(*args, **kwargs)
