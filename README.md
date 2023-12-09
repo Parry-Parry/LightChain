@@ -29,7 +29,7 @@ Here are some of the powerful uses of LightChain.
 
 ### The Notion of a Chain
 
-We have two main abstractions in Lightchain. Chains are composed of links. A Link is always defined explicitly, whereas a Chain is generally implicit.
+We have two main abstractions in Lightchain. Chains are composed of Links. A Link is always defined explicitly, whereas a Chain is generally implicit.
 
 * Link: An atomic component of a system, its internals may be accessed but generally will only use __call__
 * Chain: Multiple links, a chain can mix sequential and branching components to model any desired behaviour
