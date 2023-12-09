@@ -50,18 +50,16 @@ Let's turn a HuggingFace model into a Link.
 
 ```
 from lightchain import chainable, AutoPrompt
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import pipeline
 
-model_link = chainable(AutoModelForCausalLM, call='generate' name='Llama Model')
-tokenize_link = chainable(AutoTokenizer, call='batch_encode', name='Llama Tokenizer')
+model_link = chainable(pipeline)
 
 MODEL_ID = 'meta-llama/Llama-2-7b-chat-hf'
 
-llama = model_link(MODEL_ID) # If you need to add generation kwargs use functools.partial
-llama_tokenizer = tokenize_link(MODEL_ID)
+llama = model_link(model=MODEL_ID, model_kwargs={'device_map':'auto'}) # If you need to add generation kwargs use functools.partial
 prompt = AutoPrompt.from_string('You are a helpful assistant \n Write a response which answers the question \n Question: {} \n Response:')
 
-pipeline = prompt >> llama_tokenizer >> llama
+pipeline = prompt >> llama
 
 output = pipeline(text="Do you think most prompting libraries are over-engineered?")
 ```
@@ -100,15 +98,14 @@ bm25 = BM25('msmarco_passage')
 
 # Using our classes from before
 
-pipeline = BM25 >> prompt >> llama_tokenizer >> llama
+pipeline = BM25 >> prompt >> llama
 ```
 
 Let's say we want to assess our RAG setup with a different model e.g. Mistral-7B, whilst also getting Llama output.
 
 ```
 MODEL_ID = 'mistralai/Mistral-7B-Instruct-v0.1'
-mistral = model_link(MODEL_ID, name='Mistral Model')
-mistral_tokenizer = tokenizer_link(MODEL_ID, name='Mistral Tokenizer')
+mistral = model_link(model=MODEL_ID, model_kwargs={'device_map':'auto'})
 
-pipeline = bm25 >> prompt >> (mistral_tokenizer >> mistral) | (llama_tokenizer >> llama) 
+pipeline = bm25 >> prompt >> (mistral | llama) 
 ```
