@@ -5,7 +5,7 @@ with open('requirements.txt') as f:
 
 setuptools.setup(
     name='lightchain',
-    version='0.0.5',
+    version='0.0.6',
     author='Andrew Parry',
     author_email='a.parry.1@research.gla.ac.uk',
     description="Stupidly Simple Chain Structures",
