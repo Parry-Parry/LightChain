@@ -23,10 +23,10 @@ class Link(object):
         from lightchain.link.ops import ForkPipeline
         return ForkPipeline(self, right)
     
+    @abstractmethod
     def logic(self, *args : Any, **kwargs : Any) -> Any:
         raise NotImplementedError
     
-    @abstractmethod
     def __call__(self, *args, **kwargs) -> Any:
         self.logic(*args, **kwargs)
 
