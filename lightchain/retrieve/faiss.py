@@ -40,12 +40,12 @@ class FaissEmbeddingMemory(Memory):
     def save(self, path : str) -> None:
         faiss.write_index(self.index, path)
 
-    def logic(self, query : Union[np.array, List[str], str], k : int = 1) -> Union[List[str], str]:
+    def logic(self, query : Union[np.array, List[str], str], search_kwargs : dict) -> Union[List[str], str]:
         if isinstance(query, str): query = [query]
         if isinstance(query, list): 
             if self.encoder is not None: 
                 vectors = self.encoder(query)
             else: raise ValueError('No encoder provided, pre-encode queries before searching.')
-        _, indices = self.index.search(vectors, k)
+        _, indices = self.index.search(vectors, **search_kwargs)
         if len(query) == 1: return [self.id2doc[index] for index in indices[0]]
         else: return [[self.id2doc[index] for index in query_indices] for query_indices in indices]
