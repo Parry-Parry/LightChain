@@ -61,7 +61,7 @@ prompt = AutoPrompt.from_string('You are a helpful assistant \n Write a response
 
 chain = prompt >> llama
 
-output = chain(text="Do you think most prompting libraries are over-engineered?")
+output = chain(question="Do you think most prompting libraries are over-engineered?")
 ```
 
 Now, let's take that previous pipeline and make it use RAG. We will explicitly define a link as we are going to interface with a more complex API (The wonderful PyTerrier)
@@ -99,6 +99,8 @@ bm25 = BM25('msmarco_passage')
 # Using our classes from before
 
 chain = BM25 >> prompt >> llama
+
+output = chain("Do you think most prompting libraries are over-engineered?")
 ```
 
 Let's say we want to assess our RAG setup with a different model e.g. Mistral-7B, whilst also getting Llama output.
