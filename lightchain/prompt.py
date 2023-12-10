@@ -45,10 +45,6 @@ class AutoPrompt(Link):
     def __dict__(self) -> dict:
         return {'prompt' : self.prompt, 'name' : self.name, 'description' : self.description}
     
-    def to_json(self) -> str:
-        return dumps(self, default=lambda x: x.__dict__, 
-            sort_keys=True, indent=4)
-    
     def __call__(self, *args : Optional[List[dict]], **kwargs : Optional[Any]) -> Optional[List[str]] or str:
         if args:
             if len(args) == 1: return [self(**inp) for inp in args[0]]

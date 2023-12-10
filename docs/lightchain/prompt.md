@@ -10,7 +10,6 @@ Prompt
   - [AutoPrompt](#autoprompt)
     - [AutoPrompt.from_json](#autopromptfrom_json)
     - [AutoPrompt.from_string](#autopromptfrom_string)
-    - [AutoPrompt().to_json](#autoprompt()to_json)
   - [StructPrompt](#structprompt)
 
 ## AutoPrompt
@@ -70,21 +69,11 @@ def from_string(
 ) -> "AutoPrompt": ...
 ```
 
-### AutoPrompt().to_json
-
-[Show source in prompt.py:48](../../lightchain/prompt.py#L48)
-
-#### Signature
-
-```python
-def to_json(self) -> str: ...
-```
-
 
 
 ## StructPrompt
 
-[Show source in prompt.py:63](../../lightchain/prompt.py#L63)
+[Show source in prompt.py:59](../../lightchain/prompt.py#L59)
 
 #### Signature
 

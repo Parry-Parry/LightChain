@@ -71,12 +71,12 @@ from lightchain import Link
 from typing import List, Tuple
 import pyterrier as pt
 if not pt.started(): pt.init()
-
+import pandas as pd
 from pyterrier import BatchRetrieve
 
 prompt = AutoPrompt.from_string('You are a helpful assistant \n Write a response which answers the question given the context \n Question: {question} \n Context: {context} \n Response:')
 
-@chainable(call='search', name='BM25', desc='A Lexical Model')
+@chainable(call='search', name='BM25', description='A Lexical Model')
 class BM25:
     def __init__(dataset : str, num_results : int = 10, text_attr : str = 'body'):
         text_ref = pt.get_dataset(dataset)
@@ -84,7 +84,6 @@ class BM25:
 
     def search(question : Tuple[List[str], str]) -> Tuple[List[str], str]:
         # Let's keep it simple and return the full string
-        import pandas as pd
         if isinstance(text, list):
             frame = pd.DataFrame({'qid' : [*range(len(text))], 'query' : text})
             docs = self.transformer(frame)

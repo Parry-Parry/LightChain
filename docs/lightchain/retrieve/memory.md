@@ -9,11 +9,12 @@ Memory
 
 - [Memory](#memory)
   - [ConversationMemory](#conversationmemory)
-    - [ConversationMemory().extend](#conversationmemory()extend)
     - [ConversationMemory().insert](#conversationmemory()insert)
+    - [ConversationMemory().single_insert](#conversationmemory()single_insert)
   - [DictMemory](#dictmemory)
     - [DictMemory().clear](#dictmemory()clear)
     - [DictMemory().insert](#dictmemory()insert)
+    - [DictMemory().logic](#dictmemory()logic)
   - [Memory](#memory-1)
     - [Memory().insert](#memory()insert)
   - [StringLengthBuffer](#stringlengthbuffer)
@@ -21,11 +22,14 @@ Memory
     - [StringLengthBuffer().extend_essential](#stringlengthbuffer()extend_essential)
     - [StringLengthBuffer().get_maximum_context](#stringlengthbuffer()get_maximum_context)
     - [StringLengthBuffer().insert](#stringlengthbuffer()insert)
+    - [StringLengthBuffer().logic](#stringlengthbuffer()logic)
     - [StringLengthBuffer().set_essential](#stringlengthbuffer()set_essential)
 
 ## ConversationMemory
 
-[Show source in memory.py:77](../../../lightchain/retrieve/memory.py#L77)
+[Show source in memory.py:134](../../../lightchain/retrieve/memory.py#L134)
+
+The ConversationMemory class is a concrete implementation of the StringLengthBuffer class that buffers a conversation.
 
 #### Signature
 
@@ -46,24 +50,30 @@ class ConversationMemory(StringLengthBuffer):
 
 - [StringLengthBuffer](#stringlengthbuffer)
 
-### ConversationMemory().extend
-
-[Show source in memory.py:94](../../../lightchain/retrieve/memory.py#L94)
-
-#### Signature
-
-```python
-def extend(self, items: Any) -> None: ...
-```
-
 ### ConversationMemory().insert
 
-[Show source in memory.py:89](../../../lightchain/retrieve/memory.py#L89)
+[Show source in memory.py:171](../../../lightchain/retrieve/memory.py#L171)
 
 #### Signature
 
 ```python
-def insert(self, item: Any) -> None: ...
+def insert(self, item: Union[Tuple[Any, Any], List[Tuple[Any, Any]]]) -> None: ...
+```
+
+### ConversationMemory().single_insert
+
+[Show source in memory.py:160](../../../lightchain/retrieve/memory.py#L160)
+
+Inserts the given item into the main buffer. The item is a tuple where the first element is the user input and the second element is the AI output.
+
+#### Arguments
+
+item (Tuple[Any, Any]): The item to insert into the main buffer.
+
+#### Signature
+
+```python
+def single_insert(self, item: Tuple[Any, Any]) -> None: ...
 ```
 
 
@@ -71,6 +81,8 @@ def insert(self, item: Any) -> None: ...
 ## DictMemory
 
 [Show source in memory.py:18](../../../lightchain/retrieve/memory.py#L18)
+
+The DictMemory class is a concrete implementation of the Memory class using a dictionary as the underlying data structure.
 
 #### Signature
 
@@ -85,7 +97,9 @@ class DictMemory(Memory):
 
 ### DictMemory().clear
 
-[Show source in memory.py:26](../../../lightchain/retrieve/memory.py#L26)
+[Show source in memory.py:35](../../../lightchain/retrieve/memory.py#L35)
+
+Clears the buffer.
 
 #### Signature
 
@@ -95,7 +109,9 @@ def clear(self) -> None: ...
 
 ### DictMemory().insert
 
-[Show source in memory.py:23](../../../lightchain/retrieve/memory.py#L23)
+[Show source in memory.py:29](../../../lightchain/retrieve/memory.py#L29)
+
+Inserts the given keyword arguments into the buffer.
 
 #### Signature
 
@@ -103,11 +119,26 @@ def clear(self) -> None: ...
 def insert(self, **kwargs) -> None: ...
 ```
 
+### DictMemory().logic
+
+[Show source in memory.py:41](../../../lightchain/retrieve/memory.py#L41)
+
+Retrieves the values associated with the given keys from the buffer.
+
+#### Signature
+
+```python
+def logic(self, keys) -> Any: ...
+```
+
 
 
 ## Memory
 
 [Show source in memory.py:6](../../../lightchain/retrieve/memory.py#L6)
+
+The Memory class is an abstract base class for memory operations.
+It provides methods for inserting data and calling the memory.
 
 #### Signature
 
@@ -118,7 +149,7 @@ class Memory(Link):
 
 ### Memory().insert
 
-[Show source in memory.py:10](../../../lightchain/retrieve/memory.py#L10)
+[Show source in memory.py:14](../../../lightchain/retrieve/memory.py#L14)
 
 #### Signature
 
@@ -131,7 +162,9 @@ def insert(self, *args, **kwargs) -> None: ...
 
 ## StringLengthBuffer
 
-[Show source in memory.py:34](../../../lightchain/retrieve/memory.py#L34)
+[Show source in memory.py:49](../../../lightchain/retrieve/memory.py#L49)
+
+The StringLengthBuffer class is a concrete implementation of the DictMemory class that buffers strings of a certain length.
 
 #### Signature
 
@@ -148,7 +181,9 @@ class StringLengthBuffer(DictMemory):
 
 ### StringLengthBuffer().clear
 
-[Show source in memory.py:60](../../../lightchain/retrieve/memory.py#L60)
+[Show source in memory.py:105](../../../lightchain/retrieve/memory.py#L105)
+
+Clears the main buffer.
 
 #### Signature
 
@@ -158,7 +193,13 @@ def clear(self) -> None: ...
 
 ### StringLengthBuffer().extend_essential
 
-[Show source in memory.py:51](../../../lightchain/retrieve/memory.py#L51)
+[Show source in memory.py:84](../../../lightchain/retrieve/memory.py#L84)
+
+Sets the essential text.
+
+#### Arguments
+
+- `text` *str* - The new essential text.
 
 #### Signature
 
@@ -168,7 +209,17 @@ def extend_essential(self, text: str) -> None: ...
 
 ### StringLengthBuffer().get_maximum_context
 
-[Show source in memory.py:63](../../../lightchain/retrieve/memory.py#L63)
+[Show source in memory.py:111](../../../lightchain/retrieve/memory.py#L111)
+
+Gets the maximum context that can be included in the buffer, given a new string.
+
+#### Arguments
+
+- `new_string` *str, optional* - The new string to consider when calculating the maximum context. Defaults to ''.
+
+#### Returns
+
+- `str` - The maximum context that can be included in the buffer.
 
 #### Signature
 
@@ -178,7 +229,13 @@ def get_maximum_context(self, new_string="") -> str: ...
 
 ### StringLengthBuffer().insert
 
-[Show source in memory.py:56](../../../lightchain/retrieve/memory.py#L56)
+[Show source in memory.py:95](../../../lightchain/retrieve/memory.py#L95)
+
+Inserts the given item into the main buffer. If the item is a list, each element is inserted individually.
+
+#### Arguments
+
+- `item` *Any* - The item to insert into the main buffer.
 
 #### Signature
 
@@ -186,9 +243,25 @@ def get_maximum_context(self, new_string="") -> str: ...
 def insert(self, item: Any) -> None: ...
 ```
 
+### StringLengthBuffer().logic
+
+[Show source in memory.py:131](../../../lightchain/retrieve/memory.py#L131)
+
+#### Signature
+
+```python
+def logic(self, text: str) -> str: ...
+```
+
 ### StringLengthBuffer().set_essential
 
-[Show source in memory.py:46](../../../lightchain/retrieve/memory.py#L46)
+[Show source in memory.py:73](../../../lightchain/retrieve/memory.py#L73)
+
+Sets the essential text.
+
+#### Arguments
+
+- `text` *str* - The new essential text.
 
 #### Signature
 
