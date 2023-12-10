@@ -5,7 +5,7 @@ from forge import fsignature
 
 class Link(object):
     """
-    A base class for creating pipeline operations.
+    A base class for creating Chain operations.
     It provides methods for chaining operations in a sequential or forked manner.
     
     Attributes:
@@ -25,16 +25,16 @@ class Link(object):
             setattr(self, key, value)
     
     def __rshift__(self, right):
-        from lightchain.link.ops import SequentialPipeline
-        return SequentialPipeline(self, right)
+        from lightchain.link.ops import SequentialChain
+        return SequentialChain(self, right)
     
     def __lshift__(self, left):
-        from lightchain.link.ops import SequentialPipeline
-        return SequentialPipeline(left, self)
+        from lightchain.link.ops import SequentialChain
+        return SequentialChain(left, self)
     
     def __or__(self, right):
-        from lightchain.link.ops import ForkPipeline
-        return ForkPipeline(self, right)
+        from lightchain.link.ops import ForkChain
+        return ForkChain(self, right)
     
     @property
     def signature(self):
@@ -52,7 +52,7 @@ class Link(object):
 
 def chainable(cls : Union[callable, Any], call='__call__', name='External Object', description="We don't know what this is but it's probably important"):
     """
-    Wraps a class to make it chainable in a pipeline. The wrapped class inherits from the Link class.
+    Wraps a class to make it chainable in a Chain. The wrapped class inherits from the Link class.
 
     Args:
         cls (callable or Any): The class or function to be wrapped.
@@ -71,8 +71,7 @@ def chainable(cls : Union[callable, Any], call='__call__', name='External Object
                 self.obj = cls(*args, **kwargs)
                 self.func = getattr(self.obj, call) 
             else:
-                self.obj = None
-                self.func = cls
+                self.obj, self.func = cls, cls
             self._signature = fsignature(self.func)
         
         def logic(self, *args : Any, **kwargs : Any) -> Any:
