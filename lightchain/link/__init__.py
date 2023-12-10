@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Any
+from typing import Any, Union
 from functools import wraps
 from forge import fsignature
 
@@ -50,12 +50,12 @@ class Link(object):
     def __call__(self, *args, **kwargs) -> Any:
         self.logic(*args, **kwargs)
 
-def chainable(cls, call='__call__', name='External Object', description="We don't know what this is but it's probably important"):
+def chainable(cls : Union[callable, Any], call='__call__', name='External Object', description="We don't know what this is but it's probably important"):
     """
     Wraps a class to make it chainable in a pipeline. The wrapped class inherits from the Link class.
 
     Args:
-        cls (type): The class to be wrapped.
+        cls (callable or Any): The class or function to be wrapped.
         call (str or callable, optional): The method of the class to be called when the object is called. If a callable is passed, it is used directly. Defaults to '__call__'.
         name (str, optional): The name of the Link object. 
         description (str, optional): The description of the Link object.
