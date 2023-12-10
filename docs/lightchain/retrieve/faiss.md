@@ -8,15 +8,15 @@ Faiss
 > Auto-generated documentation for [lightchain.retrieve.faiss](../../../lightchain/retrieve/faiss.py) module.
 
 - [Faiss](#faiss)
-  - [FaissIndex](#faissindex)
+  - [FaissEmbeddingMemory](#faissembeddingmemory)
 
-## FaissIndex
+## FaissEmbeddingMemory
 
 [Show source in faiss.py:3](../../../lightchain/retrieve/faiss.py#L3)
 
 #### Signature
 
 ```python
-class FaissIndex(Memory):
+class FaissEmbeddingMemory(Memory):
     def __init__(self, **kwargs) -> None: ...
 ```

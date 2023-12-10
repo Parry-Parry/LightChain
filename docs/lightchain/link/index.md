@@ -9,6 +9,7 @@ Link
 - [Link](#link)
   - [Link](#link-1)
     - [Link().logic](#link()logic)
+    - [Link().signature](#link()signature)
   - [SkipLink](#skiplink)
     - [SkipLink().logic](#skiplink()logic)
   - [chainable](#chainable)
@@ -36,7 +37,9 @@ class Link(object):
 
 ### Link().logic
 
-[Show source in __init__.py:39](../../../lightchain/link/__init__.py#L39)
+[Show source in __init__.py:43](../../../lightchain/link/__init__.py#L43)
+
+The logic of the Link object. It is implemented in a subclass.
 
 #### Signature
 
@@ -45,11 +48,22 @@ class Link(object):
 def logic(self, *args: Any, **kwargs: Any) -> Any: ...
 ```
 
+### Link().signature
+
+[Show source in __init__.py:39](../../../lightchain/link/__init__.py#L39)
+
+#### Signature
+
+```python
+@property
+def signature(self): ...
+```
+
 
 
 ## SkipLink
 
-[Show source in __init__.py:71](../../../lightchain/link/__init__.py#L71)
+[Show source in __init__.py:82](../../../lightchain/link/__init__.py#L82)
 
 #### Signature
 
@@ -64,7 +78,7 @@ class SkipLink(Link):
 
 ### SkipLink().logic
 
-[Show source in __init__.py:77](../../../lightchain/link/__init__.py#L77)
+[Show source in __init__.py:88](../../../lightchain/link/__init__.py#L88)
 
 #### Signature
 
@@ -76,13 +90,13 @@ def logic(self, *args, **kwargs) -> Any: ...
 
 ## chainable
 
-[Show source in __init__.py:46](../../../lightchain/link/__init__.py#L46)
+[Show source in __init__.py:53](../../../lightchain/link/__init__.py#L53)
 
 Wraps a class to make it chainable in a pipeline. The wrapped class inherits from the Link class.
 
 #### Arguments
 
-- `cls` *type* - The class to be wrapped.
+cls (callable or Any): The class or function to be wrapped.
 call (str or callable, optional): The method of the class to be called when the object is called. If a callable is passed, it is used directly. Defaults to '__call__'.
 - `name` *str, optional* - The name of the Link object.
 - `description` *str, optional* - The description of the Link object.
@@ -95,7 +109,7 @@ call (str or callable, optional): The method of the class to be called when the 
 
 ```python
 def chainable(
-    cls,
+    cls: Union[callable, Any],
     call="__call__",
     name="External Object",
     description="We don't know what this is but it's probably important",
