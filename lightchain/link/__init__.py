@@ -20,7 +20,7 @@ class Link(object):
         """
         Initializes the Link object. Any keyword arguments passed are set as attributes of the object.
         """
-        self.signature = fsignature(self.logic)
+        self._signature = fsignature(self.logic)
         for key, value in kwargs.items():
             setattr(self, key, value)
     
@@ -36,8 +36,15 @@ class Link(object):
         from lightchain.link.ops import ForkPipeline
         return ForkPipeline(self, right)
     
+    @property
+    def signature(self):
+        return self._signature
+    
     @abstractmethod
     def logic(self, *args : Any, **kwargs : Any) -> Any:
+        """
+        The logic of the Link object. It is implemented in a subclass.
+        """
         raise NotImplementedError
     
     def __call__(self, *args, **kwargs) -> Any:
@@ -60,17 +67,21 @@ def chainable(cls, call='__call__', name='External Object', description="We don'
     class Wrapper(Link):
         def __init__(self, *args, **kwargs) -> None:
             super().__init__(name=name, description=description)
-            self.obj = cls(*args, **kwargs)
-            self.func = getattr(self.obj, call) if not isinstance(call, callable) else call
-            self.signature = fsignature(self.func)
-    
+            if not isinstance(call, callable):
+                self.obj = cls(*args, **kwargs)
+                self.func = getattr(self.obj, call) 
+            else:
+                self.obj = None
+                self.func = cls
+            self._signature = fsignature(self.func)
+        
         def logic(self, *args : Any, **kwargs : Any) -> Any:
             return self.func(*args, **kwargs)
     return Wrapper
 
 class SkipLink(Link):
     name = 'Skip'
-    signature = 'I'
+    signature = 'I' # Fix this, we need a universal type
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
 
