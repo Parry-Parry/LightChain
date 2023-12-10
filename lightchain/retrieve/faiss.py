@@ -46,5 +46,6 @@ class FaissEmbeddingMemory(Memory):
             if self.encoder is not None: 
                 vectors = self.encoder(query)
             else: raise ValueError('No encoder provided, pre-encode queries before searching.')
-        distances, indices = self.index.search(vectors, k)
-        return indices if k > 1 else indices[0]
+        _, indices = self.index.search(vectors, k)
+        if len(query) == 1: return [self.id2doc[index] for index in indices[0]]
+        else: return [[self.id2doc[index] for index in query_indices] for query_indices in indices]
