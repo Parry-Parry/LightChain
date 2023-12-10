@@ -119,6 +119,10 @@ class ForkChain(Chain):
         operands (Iterable): An iterable of objects to be coerced into Link objects and added to the Chain.
         **kwargs: Additional keyword arguments are passed to the super class initializers.
     """
+    """
+    TODO:
+        * Make sure this is intended behaviour as I can't see a case where we need kwargs passed to all chains, that behaviour is handled by chainable
+    """
     name = 'Forked Chain'
     def __init__(self, operands : Iterable, **kwargs):
         super().__init__(operands=operands, **kwargs)
@@ -142,6 +146,10 @@ class ForkChain(Chain):
             return {link.name : link(**kwargs) for link in self.link}
 
 class CAT(Link):
+    """
+    TODO:
+        * This should handle both dicts from fork and lists from pipe
+    """
     def __init__(self, char='\n') -> None:
         super().__init__(name='Cat', description='Concatenates the input.')
         self.char = char
