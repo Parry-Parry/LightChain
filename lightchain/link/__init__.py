@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from typing import Any, Union
-from functools import wraps
+from functools import wraps, partial
 from forge import fsignature
 
 class Link(object):
@@ -50,7 +50,7 @@ class Link(object):
     def __call__(self, *args, **kwargs) -> Any:
         self.logic(*args, **kwargs)
 
-def chainable(cls : Union[callable, Any], call='__call__', name='External Object', description="We don't know what this is but it's probably important"):
+def chainable(cls : Union[callable, Any], call='__call__', name='External Object', description="We don't know what this is but it's probably important", **kwargs):
     """
     Wraps a class to make it chainable in a Chain. The wrapped class inherits from the Link class.
 
@@ -73,7 +73,9 @@ def chainable(cls : Union[callable, Any], call='__call__', name='External Object
             else:
                 self.obj, self.func = cls, cls
             self._signature = fsignature(self.func)
-        
+            if kwargs:
+                self.func = partial(self.func, **kwargs)
+
         def logic(self, *args : Any, **kwargs : Any) -> Any:
             return self.func(*args, **kwargs)
     return Wrapper
