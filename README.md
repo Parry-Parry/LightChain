@@ -19,8 +19,8 @@ Use our AutoPrompt, which extracts your arguments and allows for the convenient 
 ```
 from lightchain import AutoPrompt
 
-prompt = AutoPrompt.from_string('You are a helpful assistant \n Write a response which answers the question \n Question: {text} \n Response:')
-value = prompt(text="Do you think most prompting libraries are over-engineered?")
+prompt = AutoPrompt.from_string('You are a helpful assistant \n Write a response which answers the question \n Question: {question} \n Response:')
+value = prompt(question="Do you think most prompting libraries are over-engineered?")
 ```
 
 ## More Complex Use Cases
@@ -82,7 +82,7 @@ class BM25:
         text_ref = pt.get_dataset(dataset)
         self.transformer = pt.BatchRetrieve.from_dataset(dataset, "terrier_stemmed", wmodel="BM25") % num_results >> pt.text.get_text(text_ref, text_attr)
 
-    def search(text : Tuple[List[str], str]) -> Tuple[List[str], str]:
+    def search(question : Tuple[List[str], str]) -> Tuple[List[str], str]:
         # Let's keep it simple and return the full string
         import pandas as pd
         if isinstance(text, list):
@@ -100,7 +100,7 @@ bm25 = BM25('msmarco_passage')
 
 chain = BM25 >> prompt >> llama
 
-output = chain("Do you think most prompting libraries are over-engineered?")
+output = chain(question="Do you think most prompting libraries are over-engineered?")
 ```
 
 Let's say we want to assess our RAG setup with a different model e.g. Mistral-7B, whilst also getting Llama output.
