@@ -19,7 +19,7 @@ Link
 
 [Show source in __init__.py:6](../../../lightchain/link/__init__.py#L6)
 
-A base class for creating pipeline operations.
+A base class for creating Chain operations.
 It provides methods for chaining operations in a sequential or forked manner.
 
 #### Attributes
@@ -63,7 +63,7 @@ def signature(self): ...
 
 ## SkipLink
 
-[Show source in __init__.py:82](../../../lightchain/link/__init__.py#L82)
+[Show source in __init__.py:81](../../../lightchain/link/__init__.py#L81)
 
 #### Signature
 
@@ -78,7 +78,7 @@ class SkipLink(Link):
 
 ### SkipLink().logic
 
-[Show source in __init__.py:88](../../../lightchain/link/__init__.py#L88)
+[Show source in __init__.py:87](../../../lightchain/link/__init__.py#L87)
 
 #### Signature
 
@@ -92,7 +92,7 @@ def logic(self, *args, **kwargs) -> Any: ...
 
 [Show source in __init__.py:53](../../../lightchain/link/__init__.py#L53)
 
-Wraps a class to make it chainable in a pipeline. The wrapped class inherits from the Link class.
+Wraps a class to make it chainable in a Chain. The wrapped class inherits from the Link class.
 
 #### Arguments
 
