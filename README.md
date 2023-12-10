@@ -57,7 +57,7 @@ model_link = chainable(pipeline)
 MODEL_ID = 'meta-llama/Llama-2-7b-chat-hf'
 
 llama = model_link(model=MODEL_ID, model_kwargs={'device_map':'auto'}) # If you need to add generation kwargs use functools.partial
-prompt = AutoPrompt.from_string('You are a helpful assistant \n Write a response which answers the question \n Question: {} \n Response:')
+prompt = AutoPrompt.from_string('You are a helpful assistant \n Write a response which answers the question \n Question: {question} \n Response:')
 
 chain = prompt >> llama
 
