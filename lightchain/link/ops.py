@@ -3,7 +3,7 @@ from types import FunctionType
 from matchpy import Wildcard, Operation, Arity
 from abc import abstractmethod
 from typing import Any, Dict, Iterable, List, Union
-from lightchain.object import Link, chainable
+from lightchain.link import Link, chainable
 
 def get_link(link) -> Any:
     """

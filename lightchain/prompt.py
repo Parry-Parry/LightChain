@@ -1,4 +1,4 @@
-from json import dumps, loads
+from json import loads
 from typing import Optional, List, Any
 from re import findall
 from lightchain.link import Link
