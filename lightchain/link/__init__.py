@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Any, Union
 from functools import wraps, partial
-from forge import fsignature
+from inspect import signature
 
 class Link(object):
     """
@@ -20,7 +20,7 @@ class Link(object):
         """
         Initializes the Link object. Any keyword arguments passed are set as attributes of the object.
         """
-        self._signature = fsignature(self.logic)
+        self._signature = signature(self.logic)
         for key, value in kwargs.items():
             setattr(self, key, value)
     
@@ -72,31 +72,10 @@ def chainable(cls : Union[callable, Any], call='__call__', name='External Object
                 self.func = getattr(self.obj, call) 
             else:
                 self.obj, self.func = cls, cls
-            self._signature = fsignature(self.func)
+            self._signature = signature(self.func)
             if kwargs:
                 self.func = partial(self.func, **kwargs)
 
         def logic(self, *args : Any, **kwargs : Any) -> Any:
             return self.func(*args, **kwargs)
     return Wrapper
-
-class SkipLink(Link):
-    name = 'Skip'
-    signature = 'I' # Fix this, we need a universal type
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
-
-    def logic(self, *args, **kwargs) -> Any:
-        return args, kwargs
-
-class IndentityLink(Link, Operation):
-    """
-        A transformer that returns exactly the same as its input.
-    """
-    arity = Arity.nullary
-
-    def __init__(self, *args, **kwargs):
-        super(IdentityTransformer, self).__init__(*args, **kwargs)
-    
-    def transform(self, topics):
-        return topics
