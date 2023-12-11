@@ -77,7 +77,7 @@ class SequentialChain(Chain):
         """
         super().__init__(operands=operands, **kwargs)
 
-    def logic(self, args, **kwargs):
+    def logic(self, *args, **kwargs):
         """
         Implements the logic of the SequentialChain. It applies each link in the Chain to the input in order.
 
@@ -88,7 +88,6 @@ class SequentialChain(Chain):
         Returns:
             Any: The output of the Chain.
         """
-        out = args
         for link in self.links.values():
             if isinstance(out, dict): out = {k : link(v, **kwargs) for k, v in out.items()}
             else: out = link(out, **kwargs)
@@ -119,10 +118,6 @@ class ForkChain(Chain):
         operands (Iterable): An iterable of objects to be coerced into Link objects and added to the Chain.
         **kwargs: Additional keyword arguments are passed to the super class initializers.
     """
-    """
-    TODO:
-        * Make sure this is intended behaviour as I can't see a case where we need kwargs passed to all chains, that behaviour is handled by chainable
-    """
     name = 'Forked Chain'
     def __init__(self, operands : Iterable, **kwargs):
         super().__init__(operands=operands, **kwargs)
@@ -141,9 +136,7 @@ class ForkChain(Chain):
         if args:
             if len(args) == 1: return [self(**inp) for inp in args[0]]
             else: return map(self, args)
-        elif kwargs:
-            if isinstance(args[0], dict): return {k : self(v, **kwargs) for k, v in args[0].items()}
-            return {link.name : link(**kwargs) for link in self.link}
+        elif kwargs: return {link.name : link(**kwargs) for link in self.link}
 
 class CAT(Link):
     """
@@ -156,5 +149,19 @@ class CAT(Link):
 
     def logic(self, *args : Union[List[str], str], **kwargs : Dict[Any, str]) -> Any:
         if kwargs: return self.char.join(kwargs.values())  
-        if len(args) == 1: return self.char.join(args[0])
+        if len(args) == 1: 
+            if isinstance(args[0], dict): return {k : self.char.join(v) for k, v in args[0].items()}
+            else: return self.char.join(args[0])
         else: return [*map(self.logic, args)]
+
+class IndentityLink(Link, Operation):
+    """
+        A link that returns exactly the same as its input.
+    """
+    arity = Arity.nullary
+
+    def __init__(self, *args, **kwargs):
+        super(IndentityLink, self).__init__(*args, **kwargs)
+    
+    def transform(self, *args, **kwargs):
+        return args, kwargs

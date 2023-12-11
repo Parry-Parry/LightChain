@@ -88,3 +88,15 @@ class SkipLink(Link):
 
     def logic(self, *args, **kwargs) -> Any:
         return args, kwargs
+
+class IndentityLink(Link, Operation):
+    """
+        A transformer that returns exactly the same as its input.
+    """
+    arity = Arity.nullary
+
+    def __init__(self, *args, **kwargs):
+        super(IdentityTransformer, self).__init__(*args, **kwargs)
+    
+    def transform(self, topics):
+        return topics
