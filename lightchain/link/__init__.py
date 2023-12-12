@@ -14,8 +14,8 @@ class Link(object):
         signature (str): The signature of the logic method. It is set in the initializer.
     """
 
-    name = 'Link'
-    description = 'A Link'
+    __name__ = 'Link'
+    __doc__ = 'A Link'
     def __init__(self, **kwargs) -> None:
         """
         Initializes the Link object. Any keyword arguments passed are set as attributes of the object.
@@ -50,7 +50,7 @@ class Link(object):
     def __call__(self, *args, **kwargs) -> Any:
         self.logic(*args, **kwargs)
 
-def chainable(cls : Union[callable, Any], call='__call__', name='External Object', description="We don't know what this is but it's probably important", **kwargs):
+def chainable(cls : Union[callable, Any], call='__call__', **func_kwargs):
     """
     Wraps a class to make it chainable in a Chain. The wrapped class inherits from the Link class.
 
@@ -63,19 +63,16 @@ def chainable(cls : Union[callable, Any], call='__call__', name='External Object
     Returns:
         Wrapper: The wrapped class.
     """
+
     @wraps(cls)
     class Wrapper(Link):
         def __init__(self, *args, **kwargs) -> None:
-            super().__init__(name=name, description=description)
-            if not isinstance(call, callable):
-                self.obj = cls(*args, **kwargs)
-                self.func = getattr(self.obj, call) 
+            super().__init__()
+            if isinstance(cls, callable):
+                self.obj, self.logic = cls, cls
             else:
-                self.obj, self.func = cls, cls
-            self._signature = signature(self.func)
-            if kwargs:
-                self.func = partial(self.func, **kwargs)
-
-        def logic(self, *args : Any, **kwargs : Any) -> Any:
-            return self.func(*args, **kwargs)
-    return Wrapper
+                self.obj = cls(*args, **kwargs)
+                self.logic = getattr(self.obj, call) 
+                self._signature = signature(self.logic)
+            if kwargs: self.logic = partial(self.logic, **func_kwargs)
+    return Wrapper() if isinstance(cls, callable) else Wrapper
